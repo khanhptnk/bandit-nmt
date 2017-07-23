@@ -2,9 +2,7 @@ import data.Constants as Constants
 import data.Dataset as Dataset
 import data.Dict as Dict
 
-import eval.Beam as Beam
 import eval.Evaluator as Evaluator
-import eval.Translator as Translator
 
 import metric.Bleu as Bleu
 import metric.Loss as Loss
