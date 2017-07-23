@@ -1,5 +1,5 @@
-src=${1}
-tgt=${2}
+src=$1
+tgt=$2
 lang=${2}-${1}
 
 export DATA=$DATA_HOME/$lang
