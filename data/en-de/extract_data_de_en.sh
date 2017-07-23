@@ -38,9 +38,9 @@ orig=orig
 
 mkdir -p $tmp $prep
 
-cd $orig
-tar zxvf $GZ
-cd -
+#cd $orig
+#tar zxvf $GZ
+#cd -
 
 echo "pre-processing train data..."
 for year in 2014 2015; do
