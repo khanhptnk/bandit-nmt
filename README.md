@@ -1,3 +1,3 @@
 # bandit-nmt
 
-Code will be made ready to use soon.
+Code will be ready to use soon.
