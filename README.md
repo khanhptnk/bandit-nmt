@@ -6,7 +6,7 @@ Set home directory:
 
 ~~~~
 > export BANDIT_HOME=$PWD
-> echo $BANDIT_HOME
+> export DATA=$BANDIT_HOME/data
 ~~~~
 
 ### Data extraction
