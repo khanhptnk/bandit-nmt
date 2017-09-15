@@ -7,6 +7,7 @@ Set home directory:
 ~~~~
 > export BANDIT_HOME=$PWD
 > export DATA=$BANDIT_HOME/data
+> export SCRIPT=$BANDIT_HOME/scripts
 ~~~~
 
 ### Data extraction
@@ -14,16 +15,24 @@ Set home directory:
 Download pre-processing scripts:
 
 ~~~~
-> cd $BANDIT_HOME/data/scripts
+> cd $DATA/scripts
 > bash download_scripts.sh
 ~~~~
 
 For German-English:
 ~~~~
-> cd $BANDIT_HOME/data/en-de
+> cd $DATA/en-de
 > bash extract_data_de_en.sh
 ~~~~
 
 Data should be ready in `$BAND_HOME/data/en-de/prep`
 
 TODO: Chinese-English needs segmentation
+
+
+### Data pre-processing
+
+~~~~
+> cd $SCRIPT
+> bash make_data.sh de en
+~~~~

@@ -69,16 +69,12 @@ def makeVocabulary(filename, size):
     return vocab
 
 
-def initVocabulary(name, dataFile, vocabSize):
+def initVocabulary(name, dataFile, vocabSize, saveFile):
     print("Building " + name + " vocabulary...")
     vocab = makeVocabulary(dataFile, vocabSize)
-    print()
+    print("Saving " + name + " vocabulary to \"" + saveFile + "\"...")
+    vocab.writeFile(saveFile)
     return vocab
-
-
-def saveVocabulary(name, vocab, file):
-    print("Saving " + name + " vocabulary to \"" + file + "\"...")
-    vocab.writeFile(file)
 
 def reorderSentences(pos, src, tgt, perm):
     new_pos = [pos[idx] for idx in perm]
@@ -151,13 +147,10 @@ def makeDataGeneral(which, src_path, tgt_path, dicts):
 
 def main():
     dicts = {}
-    dicts["src"] = initVocabulary("source", opt.train_src, opt.src_vocab_size)
-    dicts["tgt"] = initVocabulary("target", opt.train_tgt, opt.tgt_vocab_size)
-
-    if opt.src_vocab is None:
-        saveVocabulary("source", dicts["src"], opt.save_data + ".src.dict")
-    if opt.tgt_vocab is None:
-        saveVocabulary("target", dicts["tgt"], opt.save_data + ".tgt.dict")
+    dicts["src"] = initVocabulary("source", opt.train_src, opt.src_vocab_size,
+        opt.save_data + ".src.dict")
+    dicts["tgt"] = initVocabulary("target", opt.train_tgt, opt.tgt_vocab_size,
+        opt.save_data + ".tgt.dict")
 
     save_data = {}
     save_data["dicts"] = dicts
