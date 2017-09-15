@@ -23,10 +23,6 @@ class Encoder(nn.Module):
                         dropout=opt.dropout,
                         bidirectional=opt.brnn)
 
-        if opt.pre_word_vecs_enc is not None:
-            pretrained = torch.load(opt.pre_word_vecs_enc)
-            self.word_lut.weight.copy_(pretrained)
-
     def forward(self, inputs, hidden=None):
         emb = self.word_lut(inputs)
         if hidden is None:
@@ -88,10 +84,6 @@ class Decoder(nn.Module):
         self.dropout = nn.Dropout(opt.dropout)
 
         self.hidden_size = opt.rnn_size
-
-        if opt.pre_word_vecs_enc is not None:
-            pretrained = torch.load(opt.pre_word_vecs_dec)
-            self.word_lut.weight.copy_(pretrained)
 
     def step(self, emb, output, hidden, context):
         if self.input_feed:

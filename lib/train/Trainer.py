@@ -58,16 +58,13 @@ class Trainer(object):
     def train_epoch(self, epoch):
         self.model.train()
 
-        # shuffle mini batch order
-        batchOrder = torch.randperm(len(self.train_data))
+        self.train_data.shuffle()
 
         total_loss, report_loss = 0, 0
         total_words, report_words = 0, 0
         last_time = time.time()
         for i in range(len(self.train_data)):
-
-            batchIdx = batchOrder[i] if epoch >= self.opt.curriculum else i
-            batch = self.train_data[batchIdx]
+            batch = self.train_data[i]
             targets = batch[1]
 
             self.model.zero_grad()

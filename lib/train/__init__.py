@@ -1,3 +1,3 @@
-from .Optim import Optim
-from .ReinforceTrainer import ReinforceTrainer
-from .Trainer import Trainer
+from .Optim import *
+from .ReinforceTrainer import *
+from .Trainer import *

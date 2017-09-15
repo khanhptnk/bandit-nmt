@@ -1,12 +1,12 @@
-import onmt
+import lib
 
 def clean_up_sentence(sent, remove_unk=False, remove_eos=False):
-    if onmt.Constants.EOS in sent:
-        sent = sent[:sent.index(onmt.Constants.EOS) + 1]
+    if lib.Constants.EOS in sent:
+        sent = sent[:sent.index(lib.Constants.EOS) + 1]
     if remove_unk:
-        sent = filter(lambda x: x != onmt.Constants.UNK, sent)
+        sent = filter(lambda x: x != lib.Constants.UNK, sent)
     if remove_eos:
-        if len(sent) > 0 and sent[-1] == onmt.Constants.EOS:
+        if len(sent) > 0 and sent[-1] == lib.Constants.EOS:
             sent = sent[:-1]
     return sent
 
@@ -18,11 +18,11 @@ def single_sentence_bleu(pair):
     len_pred = len(pred)
     if len_pred == 0:
         score = 0.
-        pred = [onmt.Constants.PAD] * length
+        pred = [lib.Constants.PAD] * length
     else:
-        score = onmt.Bleu.score_sentence(pred, gold, 4, smooth=1)[-1]
+        score = lib.Bleu.score_sentence(pred, gold, 4, smooth=1)[-1]
         while len(pred) < length:
-            pred.append(onmt.Constants.PAD)
+            pred.append(lib.Constants.PAD)
 
         #print pred
         #print gold
@@ -45,4 +45,4 @@ def corpus_bleu(preds, golds):
         gold = clean_up_sentence(gold, remove_unk=False, remove_eos=True)
         clean_preds.append(pred)
         clean_golds.append(gold)
-    return onmt.Bleu.score_corpus(clean_preds, clean_golds, 4)
+    return lib.Bleu.score_corpus(clean_preds, clean_golds, 4)

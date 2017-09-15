@@ -137,16 +137,14 @@ def create_optim(model):
     return optim
 
 def create_model(model_class, dicts, gen_out_size):
-    encoder = lib.EncoderDecoder.Encoder(opt, dicts["src"])
-    decoder = lib.EncoderDecoder.Decoder(opt, dicts["tgt"])
+    encoder = lib.Encoder(opt, dicts["src"])
+    decoder = lib.Decoder(opt, dicts["tgt"])
     # Use memory efficient generator when output size is large and
     # max_generator_batches is smaller than batch_size.
     if opt.max_generator_batches < opt.batch_size and gen_out_size > 1:
-        generator = lib.Generator.MemEfficientGenerator(
-            nn.Linear(opt.rnn_size, gen_out_size), opt)
+        generator = lib.MemEfficientGenerator(nn.Linear(opt.rnn_size, gen_out_size), opt)
     else:
-        generator = lib.Generator.BaseGenerator(
-            nn.Linear(opt.rnn_size, gen_out_size), opt)
+        generator = lib.BaseGenerator(nn.Linear(opt.rnn_size, gen_out_size), opt)
     model = model_class(encoder, decoder, generator, opt)
     init(model)
     optim = create_optim(model)
@@ -157,7 +155,7 @@ def create_critic(checkpoint, dicts, opt):
         critic = checkpoint["critic"]
         critic_optim = checkpoint["critic_optim"]
     else:
-        critic, critic_optim = create_model(lib.EncoderDecoder.NMTModel, dicts, 1)
+        critic, critic_optim = create_model(lib.NMTModel, dicts, 1)
     if opt.cuda: 
         critic.cuda(opt.gpus[0])
     return critic, critic_optim 
@@ -186,8 +184,7 @@ def main():
     use_critic = opt.start_reinforce is not None
 
     if opt.load_from is None:
-        model, optim = create_model(lib.EncoderDecoder.NMTModel, dicts,
-            dicts["tgt"].size())
+        model, optim = create_model(lib.NMTModel, dicts, dicts["tgt"].size())
         checkpoint = None
     else:
         print("Loading from checkpoint at %s" % opt.load_from)

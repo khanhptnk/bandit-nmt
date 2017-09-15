@@ -24,9 +24,9 @@ class Dataset(object):
         return sorted_sents
 
     def shuffle(self):
-        zipped = list(zip(self.src, self.tgt))
+        zipped = list(zip(self.src, self.tgt, self.pos))
         random.shuffle(zipped)
-        self.src, self.tgt = [x[0] for x in zipped], [x[1] for x in zipped]
+        self.src, self.tgt, self.pos = zip(*zipped)
 
     def _batchify(self, data, align_right=False):
         max_length = max(x.size(0) for x in data)
@@ -45,15 +45,8 @@ class Dataset(object):
 
     def __getitem__(self, index):
         assert index < self.numBatches, "%d > %d" % (index, self.numBatches)
-        srcBatch = self._batchify(
-            self.src[index*self.batchSize:(index+1)*self.batchSize], align_right=True)
-
-        if self.tgt:
-            tgtBatch = self._batchify(
-                self.tgt[index*self.batchSize:(index+1)*self.batchSize])
-        else:
-            tgtBatch = None
-
+        srcBatch = self._batchify(self.src[index*self.batchSize:(index+1)*self.batchSize], align_right=True)
+        tgtBatch = self._batchify(self.tgt[index*self.batchSize:(index+1)*self.batchSize])
         return srcBatch, tgtBatch
 
     def __len__(self):
