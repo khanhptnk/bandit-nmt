@@ -1,4 +1,4 @@
-import onmt
+import lib
 
 class Evaluator(object):
     def __init__(self, model, data, metrics, dicts, opt):
@@ -27,7 +27,7 @@ class Evaluator(object):
 
             outputs = self.model(batch, True)
 
-            weights = targets.ne(onmt.Constants.PAD).float()
+            weights = targets.ne(lib.Constants.PAD).float()
             num_words = weights.data.sum()
             _, loss = self.model.predict(outputs, targets, weights,
                 self.loss_func)
@@ -59,7 +59,7 @@ class Evaluator(object):
         preds = self.data.restore_pos(preds)
         with open(pred_file, "w") as f:
             for sent in preds:
-                sent = onmt.Reward.clean_up_sentence(sent, remove_unk=False,
+                sent = lib.Reward.clean_up_sentence(sent, remove_unk=False,
                     remove_eos=True)
                 sent = [self.dicts["tgt"].getLabel(w) for w in sent]
                 print >> f, " ".join(sent)

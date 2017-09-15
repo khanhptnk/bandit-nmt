@@ -4,9 +4,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import onmt
-
-
 def weighted_xent_loss(logits, targets, weights):
     log_dist = F.log_softmax(logits)
     losses = -log_dist.gather(1, targets.unsqueeze(1))

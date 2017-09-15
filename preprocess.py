@@ -1,9 +1,9 @@
-import onmt
-
 import argparse
 import torch
 
-parser = argparse.ArgumentParser(description="preprocess.lua")
+import lib
+
+parser = argparse.ArgumentParser(description="preprocess.py")
 
 ##
 ## **Preprocess Options**
@@ -65,8 +65,8 @@ torch.manual_seed(opt.seed)
 
 
 def makeVocabulary(filename, size):
-    vocab = onmt.Dict([onmt.Constants.PAD_WORD, onmt.Constants.UNK_WORD,
-                       onmt.Constants.BOS_WORD, onmt.Constants.EOS_WORD])
+    vocab = lib.Dict([lib.Constants.PAD_WORD, lib.Constants.UNK_WORD,
+                       lib.Constants.BOS_WORD, lib.Constants.EOS_WORD])
 
     with open(filename) as f:
         for sent in f.readlines():
@@ -87,7 +87,7 @@ def initVocabulary(name, dataFile, vocabFile, vocabSize):
     if vocabFile is not None:
         # If given, load existing word dictionary.
         print("Reading " + name + " vocabulary from \"" + vocabFile + "\"...")
-        vocab = onmt.Dict()
+        vocab = lib.Dict()
         vocab.loadFile(vocabFile)
         print("Loaded " + str(vocab.size()) + " " + name + " words")
 
@@ -135,10 +135,10 @@ def makeData(which, srcFile, tgtFile, srcDicts, tgtDicts):
             len(tgtWords) > opt.seq_length)):
 
             src += [srcDicts.convertToIdx(srcWords,
-                                          onmt.Constants.UNK_WORD)]
+                                          lib.Constants.UNK_WORD)]
             tgt += [tgtDicts.convertToIdx(tgtWords,
-                                          onmt.Constants.UNK_WORD,
-                                          eosWord=onmt.Constants.EOS_WORD)]
+                                          lib.Constants.UNK_WORD,
+                                          eosWord=lib.Constants.EOS_WORD)]
 
             sizes += [len(srcWords)]
         else:

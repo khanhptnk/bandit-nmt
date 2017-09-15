@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-import onmt
+import lib
 
 class Encoder(nn.Module):
 
@@ -17,7 +17,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         self.word_lut = nn.Embedding(dicts.size(),
                                   opt.word_vec_size,
-                                  padding_idx=onmt.Constants.PAD)
+                                  padding_idx=lib.Constants.PAD)
         self.rnn = nn.LSTM(input_size, self.hidden_size,
                         num_layers=opt.layers,
                         dropout=opt.dropout,
@@ -81,10 +81,10 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
         self.word_lut = nn.Embedding(dicts.size(),
                                   opt.word_vec_size,
-                                  padding_idx=onmt.Constants.PAD)
+                                  padding_idx=lib.Constants.PAD)
         self.rnn = StackedLSTM(opt.layers, input_size, opt.rnn_size,
             opt.dropout)
-        self.attn = onmt.GlobalAttention(opt.rnn_size)
+        self.attn = lib.GlobalAttention(opt.rnn_size)
         self.dropout = nn.Dropout(opt.dropout)
 
         self.hidden_size = opt.rnn_size
@@ -147,7 +147,7 @@ class NMTModel(nn.Module):
         enc_hidden = (self._fix_enc_hidden(enc_hidden[0]),
                       self._fix_enc_hidden(enc_hidden[1]))
         init_token = Variable(torch.LongTensor(
-            [onmt.Constants.BOS] * init_output.size(0)), volatile=eval)
+            [lib.Constants.BOS] * init_output.size(0)), volatile=eval)
         if self.opt.cuda:
             init_token = init_token.cuda()
         emb = self.decoder.word_lut(init_token)
@@ -189,9 +189,9 @@ class NMTModel(nn.Module):
 
             # Stop if all sentences reach EOS.
             if num_eos is None:
-                num_eos = (pred == onmt.Constants.EOS)
+                num_eos = (pred == lib.Constants.EOS)
             else:
-                num_eos = num_eos | (pred == onmt.Constants.EOS)
+                num_eos = num_eos | (pred == lib.Constants.EOS)
             if num_eos.sum() == pred.size(0):
                 break
 
@@ -216,9 +216,9 @@ class NMTModel(nn.Module):
 
             # Stop if all sentences reach EOS.
             if num_eos is None:
-                num_eos = (sample == onmt.Constants.EOS)
+                num_eos = (sample == lib.Constants.EOS)
             else:
-                num_eos = num_eos | (sample == onmt.Constants.EOS)
+                num_eos = num_eos | (sample == lib.Constants.EOS)
             if num_eos.sum() == sample.size(0):
                 break
 

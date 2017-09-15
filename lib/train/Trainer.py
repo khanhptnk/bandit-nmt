@@ -5,16 +5,15 @@ import time
 
 import torch
 
-import onmt
+import lib
 
 class Trainer(object):
-
     def __init__(self, model, train_data, valid_data, metrics, dicts,
         optim, opt):
 
         self.model = model
         self.train_data = train_data
-        self.evaluator = onmt.Evaluator(model, valid_data, metrics, dicts, opt)
+        self.evaluator = lib.Evaluator(model, valid_data, metrics, dicts, opt)
         self.loss_func = metrics["nmt_loss"]
         self.dicts = dicts
         self.optim = optim
@@ -73,7 +72,7 @@ class Trainer(object):
             self.model.zero_grad()
             outputs = self.model(batch, eval=False)
 
-            weights = targets.ne(onmt.Constants.PAD).float()
+            weights = targets.ne(lib.Constants.PAD).float()
             num_words = weights.data.sum()
             loss = self.model.backward(outputs, targets, weights, num_words,
                 self.loss_func)

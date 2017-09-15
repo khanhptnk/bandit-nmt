@@ -1,6 +1,6 @@
 import random
 
-import onmt
+import lib
 from torch.autograd import Variable
 
 
@@ -30,7 +30,7 @@ class Dataset(object):
 
     def _batchify(self, data, align_right=False):
         max_length = max(x.size(0) for x in data)
-        out = data[0].new(len(data), max_length).fill_(onmt.Constants.PAD)
+        out = data[0].new(len(data), max_length).fill_(lib.Constants.PAD)
         for i in range(len(data)):
             data_length = data[i].size(0)
             offset = max_length - data_length if align_right else 0

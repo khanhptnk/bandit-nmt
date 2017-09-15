@@ -1,8 +1,8 @@
 import math
 import torch.optim as optim
 
-class Optim(object):
 
+class Optim(object):
     def _makeOptimizer(self):
         if self.method == 'sgd':
             self.optimizer = optim.SGD(self.params, lr=self.lr)

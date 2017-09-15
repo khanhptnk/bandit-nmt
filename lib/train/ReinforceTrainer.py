@@ -6,7 +6,7 @@ import time
 from torch.autograd import Variable
 import torch
 
-import onmt
+import lib
 
 class ReinforceTrainer(object):
 
@@ -17,7 +17,7 @@ class ReinforceTrainer(object):
         self.critic = critic
 
         self.train_data = train_data
-        self.evaluator = onmt.Evaluator(actor, valid_data, metrics, dicts, opt)
+        self.evaluator = lib.Evaluator(actor, valid_data, metrics, dicts, opt)
 
         self.actor_loss_func = metrics["nmt_loss"]
         self.critic_loss_func = metrics["critic_loss"]
@@ -135,7 +135,7 @@ class ReinforceTrainer(object):
                 rewards = rewards.cuda(self.opt.gpus[0])
 
             # Update critic.
-            critic_weights = samples.ne(onmt.Constants.PAD).float()
+            critic_weights = samples.ne(lib.Constants.PAD).float()
             num_words = critic_weights.data.sum()
 
             if not no_update:
