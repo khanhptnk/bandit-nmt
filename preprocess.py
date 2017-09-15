@@ -5,37 +5,30 @@ import lib
 
 parser = argparse.ArgumentParser(description="preprocess.py")
 
-##
-## **Preprocess Options**
-##
-
-parser.add_argument("-config",    help="Read options from this file")
-
 parser.add_argument("-train_src", required=True,
                     help="Path to the training source data")
 parser.add_argument("-train_tgt", required=True,
                     help="Path to the training target data")
 
 parser.add_argument("-train_xe_src", required=True,
-                    help="Path to the training source data")
+                    help="Path to the pre-training source data")
 parser.add_argument("-train_xe_tgt", required=True,
-                    help="Path to the training target data")
+                    help="Path to the pre-training target data")
 
 parser.add_argument("-train_pg_src", required=True,
-                    help="Path to the training source data")
+                    help="Path to the bandit training source data")
 parser.add_argument("-train_pg_tgt", required=True,
-                    help="Path to the training target data")
-
+                    help="Path to the bandit training target data")
 
 parser.add_argument("-valid_src", required=True,
                     help="Path to the validation source data")
 parser.add_argument("-valid_tgt", required=True,
                      help="Path to the validation target data")
-parser.add_argument("-test_src", default=None,
-                    help="Path to the test source data")
-parser.add_argument("-test_tgt", default=None,
-                     help="Path to the test target data")
 
+parser.add_argument("-test_src", required=True,
+                    help="Path to the test source data")
+parser.add_argument("-test_tgt", required=True,
+                     help="Path to the test target data")
 
 parser.add_argument("-save_data", required=True,
                     help="Output file for the prepared data")
@@ -44,11 +37,6 @@ parser.add_argument("-src_vocab_size", type=int, default=50000,
                     help="Size of the source vocabulary")
 parser.add_argument("-tgt_vocab_size", type=int, default=50000,
                     help="Size of the target vocabulary")
-parser.add_argument("-src_vocab",
-                    help="Path to an existing source vocabulary")
-parser.add_argument("-tgt_vocab",
-                    help="Path to an existing target vocabulary")
-
 
 parser.add_argument("-seq_length", type=int, default=50,
                     help="Maximum sequence length")
@@ -71,7 +59,7 @@ def makeVocabulary(filename, size):
     with open(filename) as f:
         for sent in f.readlines():
             for word in sent.split():
-                vocab.add(word.lower())
+                vocab.add(word.lower())  # Lowercase all words
 
     originalSize = vocab.size()
     vocab = vocab.prune(size)
@@ -81,23 +69,9 @@ def makeVocabulary(filename, size):
     return vocab
 
 
-def initVocabulary(name, dataFile, vocabFile, vocabSize):
-
-    vocab = None
-    if vocabFile is not None:
-        # If given, load existing word dictionary.
-        print("Reading " + name + " vocabulary from \"" + vocabFile + "\"...")
-        vocab = lib.Dict()
-        vocab.loadFile(vocabFile)
-        print("Loaded " + str(vocab.size()) + " " + name + " words")
-
-    if vocab is None:
-        # If a dictionary is still missing, generate it.
-        print("Building " + name + " vocabulary...")
-        genWordVocab = makeVocabulary(dataFile, vocabSize)
-
-        vocab = genWordVocab
-
+def initVocabulary(name, dataFile, vocabSize):
+    print("Building " + name + " vocabulary...")
+    vocab = makeVocabulary(dataFile, vocabSize)
     print()
     return vocab
 
@@ -131,21 +105,17 @@ def makeData(which, srcFile, tgtFile, srcDicts, tgtDicts):
             break
 
         # Only remove long sentences for training set.
-        if not ("train" in which and (len(srcWords) > opt.seq_length or \
-            len(tgtWords) > opt.seq_length)):
-
+        if len(srcWords) <= opt.seq_length and len(tgtWords) <= opt.seq_length:
             src += [srcDicts.convertToIdx(srcWords,
                                           lib.Constants.UNK_WORD)]
             tgt += [tgtDicts.convertToIdx(tgtWords,
                                           lib.Constants.UNK_WORD,
                                           eosWord=lib.Constants.EOS_WORD)]
-
             sizes += [len(srcWords)]
         else:
             ignored += 1
 
         count += 1
-
         if count % opt.report_every == 0:
             print("... %d sentences prepared" % count)
 
@@ -180,12 +150,9 @@ def makeDataGeneral(which, src_path, tgt_path, dicts):
 
 
 def main():
-
     dicts = {}
-    dicts["src"] = initVocabulary("source", opt.train_src, opt.src_vocab,
-                                  opt.src_vocab_size)
-    dicts["tgt"] = initVocabulary("target", opt.train_tgt, opt.tgt_vocab,
-                                  opt.tgt_vocab_size)
+    dicts["src"] = initVocabulary("source", opt.train_src, opt.src_vocab_size)
+    dicts["tgt"] = initVocabulary("target", opt.train_tgt, opt.tgt_vocab_size)
 
     if opt.src_vocab is None:
         saveVocabulary("source", dicts["src"], opt.save_data + ".src.dict")
@@ -200,11 +167,8 @@ def main():
         opt.train_pg_tgt, dicts)
     save_data["valid"] = makeDataGeneral("valid", opt.valid_src, opt.valid_tgt,
         dicts)
-    if opt.test_src is not None and opt.test_tgt is not None:
-        save_data["test"] = makeDataGeneral("test", opt.test_src, opt.test_tgt,
-            dicts)
-    else:
-        print("WARNING: test set not found!")
+    save_data["test"] = makeDataGeneral("test", opt.test_src, opt.test_tgt,
+        dicts)
 
     print("Saving data to \"" + opt.save_data + "-train.pt\"...")
     torch.save(save_data, opt.save_data + "-train.pt")
