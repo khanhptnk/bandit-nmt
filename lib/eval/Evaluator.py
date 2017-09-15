@@ -1,16 +1,15 @@
 import lib
 
 class Evaluator(object):
-    def __init__(self, model, data, metrics, dicts, opt):
+    def __init__(self, model, metrics, dicts, opt):
         self.model = model
-        self.data = data
         self.loss_func = metrics["nmt_loss"]
         self.sent_reward_func = metrics["sent_reward"]
         self.corpus_reward_func = metrics["corp_reward"]
         self.dicts = dicts
         self.max_length = opt.max_predict_length
 
-    def eval(self, pred_file=None):
+    def eval(self, data, pred_file=None):
         self.model.eval()
 
         total_loss = 0
@@ -20,7 +19,7 @@ class Evaluator(object):
 
         all_preds = []
         all_targets = []
-        for i in xrange(len(self.data)):
+        for i in xrange(len(data)):
             # must be batch first for gather/scatter in DataParallel
             batch = self.data[i]
             targets = batch[1]
@@ -50,13 +49,13 @@ class Evaluator(object):
         corpus_reward = self.corpus_reward_func(all_preds, all_targets)
 
         if pred_file is not None:
-            self._convert_and_report(pred_file, all_preds,
+            self._convert_and_report(data, pred_file, all_preds,
                 (loss, sent_reward, corpus_reward))
 
         return loss, sent_reward, corpus_reward
 
-    def _convert_and_report(self, pred_file, preds, metrics):
-        preds = self.data.restore_pos(preds)
+    def _convert_and_report(self, data, pred_file, preds, metrics):
+        preds = data.restore_pos(preds)
         with open(pred_file, "w") as f:
             for sent in preds:
                 sent = lib.Reward.clean_up_sentence(sent, remove_unk=False,

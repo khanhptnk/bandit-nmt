@@ -2,6 +2,7 @@ import argparse
 import os
 import numpy as np
 import random
+import time
 
 import torch
 import torch.nn as nn
@@ -16,10 +17,8 @@ parser = argparse.ArgumentParser(description="train.py")
 parser.add_argument("-data", required=True,
                     help="Path to the *-train.pt file from preprocess.py")
 parser.add_argument("-save_dir", required=True,
-                    help="""Directory to save models (models will be saved as
-                    <save_model>/model_epochN_PPL.pt where PPL is the
-                    validation perplexity""")
-parser.add_argument("-load_from", help="Path to the pretrained model.")
+                    help="Directory to save models")
+parser.add_argument("-load_from", help="Path to load a pretrained model.")
 
 ## Model options
 
@@ -28,13 +27,11 @@ parser.add_argument("-layers", type=int, default=1,
 parser.add_argument("-rnn_size", type=int, default=500,
                     help="Size of LSTM hidden states")
 parser.add_argument("-word_vec_size", type=int, default=500,
-                    help="Word embedding sizes")
+                    help="Size of word embeddings")
 parser.add_argument("-input_feed", type=int, default=1,
                     help="""Feed the context vector at each time step as
                     additional input (via concatenation with the word
                     embeddings) to the decoder.""")
-# parser.add_argument("-residual",   action="store_true",
-#                     help="Add residual connections between RNN layers.")
 parser.add_argument("-brnn", action="store_true",
                     help="Use a bidirectional encoder")
 parser.add_argument("-brnn_merge", default="concat",
@@ -46,9 +43,8 @@ parser.add_argument("-brnn_merge", default="concat",
 parser.add_argument("-batch_size", type=int, default=64,
                     help="Maximum batch size")
 parser.add_argument("-max_generator_batches", type=int, default=32,
-                    help="""Maximum batches of words in a sequence to run
-                    the generator on in parallel. Higher is faster, but uses
-                    more memory.""")
+                    help="""Split softmax input into small batches for memory efficiency. 
+                    Higher is faster, but uses more memory.""")
 parser.add_argument("-end_epoch", type=int, default=50,
                     help="Epoch to stop training.")
 parser.add_argument("-start_epoch", type=int, default=1,
@@ -59,9 +55,7 @@ parser.add_argument("-param_init", type=float, default=0.1,
 parser.add_argument("-optim", default="adam",
                     help="Optimization method. [sgd|adagrad|adadelta|adam]")
 parser.add_argument("-lr", type=float, default=1e-3,
-                    help="""Starting learning rate. If adagrad/adadelta/adam is
-                    used, then this is the global learning rate. Recommended
-                    settings: sgd = 1, adagrad = 0.1, adadelta = 1, adam = 0.1""")
+                    help="Initial learning rate")
 parser.add_argument("-max_grad_norm", type=float, default=5,
                     help="""If the norm of the gradient vector exceeds this,
                     renormalize it to have the norm equal to max_grad_norm""")
@@ -73,41 +67,28 @@ parser.add_argument("-learning_rate_decay", type=float, default=0.5,
                     gone past the start_decay_at_limit""")
 parser.add_argument("-start_decay_at", type=int, default=5,
                     help="Start decay after this epoch")
-parser.add_argument("-curriculum", action="store_true",
-                    help="""For this many epochs, order the minibatches based
-                    on source sequence length. Sometimes setting this to 1 will
-                    increase convergence speed.""")
-parser.add_argument("-pre_word_vecs_enc",
-                    help="""If a valid path is specified, then this will load
-                    pretrained word embeddings on the encoder side.
-                    See README for specific formatting instructions.""")
-parser.add_argument("-pre_word_vecs_dec",
-                    help="""If a valid path is specified, then this will load
-                    pretrained word embeddings on the decoder side.
-                    See README for specific formatting instructions.""")
 
 # GPU
 parser.add_argument("-gpus", default=[0], nargs="+", type=int,
                     help="Use CUDA")
-
 parser.add_argument("-log_interval", type=int, default=100,
                     help="Print stats at this interval.")
 parser.add_argument("-seed", type=int, default=3435,
                      help="Seed for random initialization")
 
-
 # Critic
-parser.add_argument("-start_critic_epoch", type=int, default=None,
-                    help="""Epoch to start training with critic (reinforcement
-                            learning). Recommend -1 to start immediately.""")
+parser.add_argument("-start_reinforce", type=int, default=None,
+                    help="""Epoch to start reinforcement training. 
+                    Use -1 to start immediately.""")
 parser.add_argument("-critic_pretrain_epochs", type=int, default=0,
-                    help="Number of epochs to pretrain critic (freeze actor).")
+                    help="Number of epochs to pretrain critic (actor fixed).")
 parser.add_argument("-reinforce_lr", type=float, default=1e-4,
-                    help="""Learning rate for training with critic.""")
-
+                    help="""Learning rate for reinforcement training.""")
 
 # Evaluation
 parser.add_argument("-eval", action="store_true", help="Evaluate model only")
+parser.add_argument("-eval_sample", action="store_true", default=False,
+        help="Eval by sampling")
 parser.add_argument("-max_predict_length", type=int, default=50,
                     help="Maximum length of predictions.")
 
@@ -118,14 +99,11 @@ parser.add_argument("-shape_func", type=str, default=None,
 parser.add_argument("-shape_param", type=float, default=None,
         help="Reward-shaping parameter.")
 
-
+# Others
 parser.add_argument("-no_update", action="store_true", default=False,
-        help="No update round")
-
-parser.add_argument("-sup_train", action="store_true", default=False,
-        help="Supervised learning update round")
-parser.add_argument("-eval_sample", action="store_true", default=False,
-        help="Eval by sampling")
+        help="No update round. Use to evaluate model samples.")
+parser.add_argument("-sup_train_on_bandit", action="store_true", default=False,
+        help="Supervised learning update round.")
 
 opt = parser.parse_args()
 print(opt)
@@ -191,11 +169,10 @@ def main():
 
     dataset = torch.load(opt.data)
 
-    train_data = onmt.Dataset(dataset["train_xe"], opt.batch_size, opt.cuda,
-        eval=False)
+    supervised_data = onmt.Dataset(dataset["train_xe"], opt.batch_size, opt.cuda, eval=False)
+    bandit_data = onmt.Dataset(dataset["train_pg"], opt.batch_size, opt.cuda, eval=False)
     valid_data = onmt.Dataset(dataset["valid"], opt.batch_size, opt.cuda, eval=True)
-    if "test" in dataset:
-        test_data  = onmt.Dataset(dataset["test"],  opt.batch_size, opt.cuda, eval=True)
+    test_data  = onmt.Dataset(dataset["test"], opt.batch_size, opt.cuda, eval=True)
 
     dicts = dataset["dicts"]
     print(" * vocabulary size. source = %d; target = %d" %
@@ -205,10 +182,9 @@ def main():
     print(" * number of PG training sentences. %d" %
           len(dataset["train_pg"]["src"]))
     print(" * maximum batch size. %d" % opt.batch_size)
-
     print("Building model...")
 
-    use_critic = opt.start_critic_epoch is not None
+    use_critic = opt.start_reinforce is not None
 
     if opt.load_from is None:
         model, optim = create_model(onmt.EncoderDecoder.NMTModel, dicts,
@@ -224,16 +200,11 @@ def main():
     # GPU.
     if opt.cuda:
         model.cuda(opt.gpus[0])
-        # TODO: multiple GPUs.
-        #if opt.cuda > 1:
-        #    model = nn.DataParallel(model, device_ids=opt.gpus, dim=1)
-        #    model.generator = nn.DataParallel(generator, device_ids=opt.gpus,
-        #        dim=0)
 
     # Start reinforce training immediately.
-    if opt.start_critic_epoch == -1:
+    if opt.start_reinforce == -1:
         opt.start_decay_at = opt.start_epoch
-        opt.start_critic_epoch = opt.start_epoch
+        opt.start_reinforce = opt.start_epoch
 
     # Check if end_epoch is large enough.
     if use_critic:
@@ -252,61 +223,44 @@ def main():
     metrics["sent_reward"] = onmt.Reward.sentence_bleu
     metrics["corp_reward"] = onmt.Reward.corpus_bleu
 
+    # Evaluate model on heldout dataset.
     if opt.eval:
-        valid_evaluator = onmt.Evaluator(model, valid_data, metrics, dicts, opt)
-        test_evaluator = onmt.Evaluator(model, test_data, metrics, dicts, opt)
-
-        valid_pred_file = opt.load_from.replace(".pt", ".valid.pred")
-        test_pred_file = opt.load_from.replace(".pt", ".test.pred")
-
-        valid_evaluator.eval(valid_pred_file)
-        test_evaluator.eval(test_pred_file)
+        evaluator = onmt.Evaluator(model, metrics, dicts, opt)
+        # On validation set.
+        pred_file = opt.load_from.replace(".pt", ".valid.pred")
+        evaluator.eval(valid_data, pred_file)
+        # On test set.
+        pred_file = opt.load_from.replace(".pt", ".test.pred")
+        evaluator.eval(test_data, pred_file)
     elif opt.eval_sample:
         opt.no_update = True
-        train_data = onmt.Dataset(dataset["train_pg"], opt.batch_size, opt.cuda, 
-            eval=False)
         critic, critic_optim = create_critic(checkpoint, dicts, opt)
         reinforce_trainer = onmt.ReinforceTrainer(model, critic, train_data, 
             valid_data, metrics, dicts, optim, critic_optim, opt)
         reinforce_trainer.train(opt.start_epoch, opt.start_epoch, False)
-    elif opt.sup_train:
-        train_data = onmt.Dataset(dataset["train_pg"], opt.batch_size, opt.cuda, 
-            eval=False)
-        optim.set_lr(opt.lr)
-        xent_trainer = onmt.Trainer(model, train_data, valid_data, metrics, dicts,
-            optim, opt)
+    elif opt.sup_train_on_bandit:
+        optim.set_lr(opt.reinforce_lr)
+        xent_trainer = onmt.Trainer(model, bandit_data, test_data, metrics, dicts, optim, opt)
         xent_trainer.train(opt.start_epoch, opt.start_epoch)
     else:
-        xent_trainer = onmt.Trainer(model, train_data, test_data, metrics,
-            dicts, optim, opt)
+        xent_trainer = onmt.Trainer(model, supervised_data, valid_data, metrics, dicts, optim, opt)
         if use_critic:
-            # Xent training.
-            xent_trainer.train(opt.start_epoch, opt.start_critic_epoch - 1)
-            start_time = xent_trainer.start_time
-            # For reinforce training, decay lr by -reward rather than by log loss.
-            optim.last_loss = None
+            start_time = time.time()
+            # Supervised training.
+            xent_trainer.train(opt.start_epoch, opt.start_reinforce - 1, start_time)
             # Create critic here to not affect random seed.
             critic, critic_optim = create_critic(checkpoint, dicts, opt) 
             # Pretrain critic.
             if opt.critic_pretrain_epochs > 0:
-                reinforce_trainer = onmt.ReinforceTrainer(model, critic,
-                    train_data, test_data, metrics, dicts, optim,
-                    critic_optim, opt)
-                reinforce_trainer.train(
-                    opt.start_critic_epoch,
-                    opt.start_critic_epoch + opt.critic_pretrain_epochs - 1,
+                reinforce_trainer = onmt.ReinforceTrainer(model, critic, supervised_data, valid_data, 
+                    metrics, dicts, optim, critic_optim, opt)
+                reinforce_trainer.train(opt.start_reinforce, opt.start_reinforce + opt.critic_pretrain_epochs - 1,
                     True, start_time)
-
             # Reinforce training.
-            train_data = onmt.Dataset(dataset["train_pg"], opt.batch_size,
-                opt.cuda, eval=False)
-            reinforce_trainer = onmt.ReinforceTrainer(model, critic,
-                train_data, valid_data, metrics, dicts, optim,
-                critic_optim, opt)
-            reinforce_trainer.train(
-                opt.start_critic_epoch + opt.critic_pretrain_epochs,
-                opt.end_epoch,
+            reinforce_trainer.eval_data = test_data
+            reinforce_trainer.train(opt.start_reinforce + opt.critic_pretrain_epochs, opt.end_epoch,
                 False, start_time)
+        # Supervised training only.
         else:
             xent_trainer.train(opt.start_epoch, opt.end_epoch)
 

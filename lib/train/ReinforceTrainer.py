@@ -10,22 +10,27 @@ import lib
 
 class ReinforceTrainer(object):
 
-    def __init__(self, actor, critic, train_data, valid_data, metrics, dicts,
+    def __init__(self, actor, critic, train_data, eval_data, metrics, dicts,
         optim, critic_optim, opt):
 
         self.actor = actor
         self.critic = critic
 
         self.train_data = train_data
-        self.evaluator = lib.Evaluator(actor, valid_data, metrics, dicts, opt)
+        self.eval_data = eval_data
+        self.evaluator = lib.Evaluator(actor, metrics, dicts, opt)
 
         self.actor_loss_func = metrics["nmt_loss"]
         self.critic_loss_func = metrics["critic_loss"]
         self.sent_reward_func = metrics["sent_reward"]
 
         self.dicts = dicts
+        
+        optim.last_loss = None
         self.optim = optim
+        critic_optim.last_loss = None
         self.critic_optim = critic_optim
+
         self.max_length = opt.max_predict_length
         self.shape_func = opt.shape_func
         self.opt = opt
@@ -40,10 +45,10 @@ class ReinforceTrainer(object):
             self.start_time = time.time()
         else:
             self.start_time = start_time
-
-        #  Use large lr for the critic during pretraining.
-        #  If not pretraining then use large lr at the first epoch.
+        self.optim.last_loss = self.critic_optim.last_loss = None
         self.optim.set_lr(self.opt.reinforce_lr)
+        
+        #  Use large learning rate for critic during pre-training.
         if pretrain_critic:
             self.critic_optim.set_lr(1e-3)
         else:
@@ -66,7 +71,7 @@ class ReinforceTrainer(object):
             print("Train sentence reward: %.2f" % (train_reward * 100))
             print("Critic loss: %g" % critic_loss)
 
-            valid_loss, valid_sent_reward, valid_corpus_reward = self.evaluator.eval()
+            valid_loss, valid_sent_reward, valid_corpus_reward = self.evaluator.eval(self.eval_data)
             valid_ppl = math.exp(min(valid_loss, 100))
             print("Validation perplexity: %.2f" % valid_ppl)
             print("Validation sentence reward: %.2f" % (valid_sent_reward * 100))

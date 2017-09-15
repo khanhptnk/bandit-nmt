@@ -8,12 +8,13 @@ import torch
 import lib
 
 class Trainer(object):
-    def __init__(self, model, train_data, valid_data, metrics, dicts,
+    def __init__(self, model, train_data, eval_data, metrics, dicts,
         optim, opt):
 
         self.model = model
         self.train_data = train_data
-        self.evaluator = lib.Evaluator(model, valid_data, metrics, dicts, opt)
+        self.eval_data = eval_data
+        self.evaluator = lib.Evaluator(model, metrics, dicts, opt)
         self.loss_func = metrics["nmt_loss"]
         self.dicts = dicts
         self.optim = optim
@@ -34,7 +35,7 @@ class Trainer(object):
             train_loss = self.train_epoch(epoch)
             print('Train perplexity: %.2f' % math.exp(min(train_loss, 100)))
 
-            valid_loss, valid_sent_reward, valid_corpus_reward = self.evaluator.eval()
+            valid_loss, valid_sent_reward, valid_corpus_reward = self.evaluator.eval(self.eval_data)
             valid_ppl = math.exp(min(valid_loss, 100))
             print('Validation perplexity: %.2f' % valid_ppl)
             print('Validation sentence reward: %.2f' % (valid_sent_reward * 100))
