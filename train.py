@@ -9,7 +9,7 @@ import torch.nn as nn
 from torch import cuda
 from torch.autograd import Variable
 
-import onmt
+import lib
 
 parser = argparse.ArgumentParser(description="train.py")
 
@@ -123,7 +123,6 @@ if torch.cuda.is_available() and not opt.cuda:
 
 if opt.cuda:
     cuda.set_device(opt.gpus[0])
-    print opt.gpus[0]
     torch.cuda.manual_seed(opt.seed)
 
 def init(model):
@@ -131,22 +130,22 @@ def init(model):
         p.data.uniform_(-opt.param_init, opt.param_init)
 
 def create_optim(model):
-    optim = onmt.Optim(
+    optim = lib.Optim(
         model.parameters(), opt.optim, opt.lr, opt.max_grad_norm,
         lr_decay=opt.learning_rate_decay, start_decay_at=opt.start_decay_at
     )
     return optim
 
 def create_model(model_class, dicts, gen_out_size):
-    encoder = onmt.EncoderDecoder.Encoder(opt, dicts["src"])
-    decoder = onmt.EncoderDecoder.Decoder(opt, dicts["tgt"])
+    encoder = lib.EncoderDecoder.Encoder(opt, dicts["src"])
+    decoder = lib.EncoderDecoder.Decoder(opt, dicts["tgt"])
     # Use memory efficient generator when output size is large and
     # max_generator_batches is smaller than batch_size.
     if opt.max_generator_batches < opt.batch_size and gen_out_size > 1:
-        generator = onmt.Generator.MemEfficientGenerator(
+        generator = lib.Generator.MemEfficientGenerator(
             nn.Linear(opt.rnn_size, gen_out_size), opt)
     else:
-        generator = onmt.Generator.BaseGenerator(
+        generator = lib.Generator.BaseGenerator(
             nn.Linear(opt.rnn_size, gen_out_size), opt)
     model = model_class(encoder, decoder, generator, opt)
     init(model)
@@ -158,7 +157,7 @@ def create_critic(checkpoint, dicts, opt):
         critic = checkpoint["critic"]
         critic_optim = checkpoint["critic_optim"]
     else:
-        critic, critic_optim = create_model(onmt.EncoderDecoder.NMTModel, dicts, 1)
+        critic, critic_optim = create_model(lib.EncoderDecoder.NMTModel, dicts, 1)
     if opt.cuda: 
         critic.cuda(opt.gpus[0])
     return critic, critic_optim 
@@ -169,10 +168,10 @@ def main():
 
     dataset = torch.load(opt.data)
 
-    supervised_data = onmt.Dataset(dataset["train_xe"], opt.batch_size, opt.cuda, eval=False)
-    bandit_data = onmt.Dataset(dataset["train_pg"], opt.batch_size, opt.cuda, eval=False)
-    valid_data = onmt.Dataset(dataset["valid"], opt.batch_size, opt.cuda, eval=True)
-    test_data  = onmt.Dataset(dataset["test"], opt.batch_size, opt.cuda, eval=True)
+    supervised_data = lib.Dataset(dataset["train_xe"], opt.batch_size, opt.cuda, eval=False)
+    bandit_data = lib.Dataset(dataset["train_pg"], opt.batch_size, opt.cuda, eval=False)
+    valid_data = lib.Dataset(dataset["valid"], opt.batch_size, opt.cuda, eval=True)
+    test_data  = lib.Dataset(dataset["test"], opt.batch_size, opt.cuda, eval=True)
 
     dicts = dataset["dicts"]
     print(" * vocabulary size. source = %d; target = %d" %
@@ -187,7 +186,7 @@ def main():
     use_critic = opt.start_reinforce is not None
 
     if opt.load_from is None:
-        model, optim = create_model(onmt.EncoderDecoder.NMTModel, dicts,
+        model, optim = create_model(lib.EncoderDecoder.NMTModel, dicts,
             dicts["tgt"].size())
         checkpoint = None
     else:
@@ -216,16 +215,17 @@ def main():
 
     # Metrics.
     metrics = {}
-    metrics["nmt_loss"] = onmt.Loss.weighted_xent_loss
-    metrics["critic_loss"] = onmt.Loss.weighted_mse
+    metrics["nmt_loss"] = lib.Loss.weighted_xent_loss
+    metrics["critic_loss"] = lib.Loss.weighted_mse
+    metrics["sent_reward"] = lib.Reward.sentence_bleu
+    metrics["corp_reward"] = lib.Reward.corpus_bleu
     if opt.shape_func is not None:
-        opt.shape_func = onmt.RewardShaping(opt.shape_func, opt.shape_param)
-    metrics["sent_reward"] = onmt.Reward.sentence_bleu
-    metrics["corp_reward"] = onmt.Reward.corpus_bleu
+        opt.shape_func = lib.RewardShaping(opt.shape_func, opt.shape_param)
+
 
     # Evaluate model on heldout dataset.
     if opt.eval:
-        evaluator = onmt.Evaluator(model, metrics, dicts, opt)
+        evaluator = lib.Evaluator(model, metrics, dicts, opt)
         # On validation set.
         pred_file = opt.load_from.replace(".pt", ".valid.pred")
         evaluator.eval(valid_data, pred_file)
@@ -235,15 +235,15 @@ def main():
     elif opt.eval_sample:
         opt.no_update = True
         critic, critic_optim = create_critic(checkpoint, dicts, opt)
-        reinforce_trainer = onmt.ReinforceTrainer(model, critic, train_data, 
+        reinforce_trainer = lib.ReinforceTrainer(model, critic, train_data, 
             valid_data, metrics, dicts, optim, critic_optim, opt)
         reinforce_trainer.train(opt.start_epoch, opt.start_epoch, False)
     elif opt.sup_train_on_bandit:
         optim.set_lr(opt.reinforce_lr)
-        xent_trainer = onmt.Trainer(model, bandit_data, test_data, metrics, dicts, optim, opt)
+        xent_trainer = lib.Trainer(model, bandit_data, test_data, metrics, dicts, optim, opt)
         xent_trainer.train(opt.start_epoch, opt.start_epoch)
     else:
-        xent_trainer = onmt.Trainer(model, supervised_data, valid_data, metrics, dicts, optim, opt)
+        xent_trainer = lib.Trainer(model, supervised_data, valid_data, metrics, dicts, optim, opt)
         if use_critic:
             start_time = time.time()
             # Supervised training.
@@ -252,7 +252,7 @@ def main():
             critic, critic_optim = create_critic(checkpoint, dicts, opt) 
             # Pretrain critic.
             if opt.critic_pretrain_epochs > 0:
-                reinforce_trainer = onmt.ReinforceTrainer(model, critic, supervised_data, valid_data, 
+                reinforce_trainer = lib.ReinforceTrainer(model, critic, supervised_data, valid_data, 
                     metrics, dicts, optim, critic_optim, opt)
                 reinforce_trainer.train(opt.start_reinforce, opt.start_reinforce + opt.critic_pretrain_epochs - 1,
                     True, start_time)
