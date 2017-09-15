@@ -25,3 +25,5 @@ For German-English:
 ~~~~
 
 Data should be ready in `$BAND_HOME/data/en-de/prep`
+
+TODO: Chinese-English needs segmentation
