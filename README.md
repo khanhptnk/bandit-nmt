@@ -1,6 +1,6 @@
 # bandit-nmt
 
-Code will be ready to use soon.
+**NOTE**: as of Sep 16, the code gets slower when I updated to PyTorch 2.0. This is a known issue and [PyTorch is fixing it](https://github.com/pytorch/pytorch/issues/2518#issuecomment-327835296). 
 
 Set home directory:
 
