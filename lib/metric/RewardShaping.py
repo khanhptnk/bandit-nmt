@@ -13,6 +13,7 @@ def _bin(rs, b):
 def _human_noise(rs, scale):
     res = []
     for r in rs:
+        # Use 0.67 instead of 67 because scores are in [0,1] instead of [0,100] as in human eval data.
         std = min(r * 0.64, -0.67 * r + 0.67) * scale
         r_new = np.random.normal(r, std)
         r_new = max(0., min(r_new, 1.))
