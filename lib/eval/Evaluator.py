@@ -56,10 +56,9 @@ class Evaluator(object):
         preds = data.restore_pos(preds)
         with open(pred_file, "w") as f:
             for sent in preds:
-                sent = lib.Reward.clean_up_sentence(sent, remove_unk=False,
-                    remove_eos=True)
+                sent = lib.Reward.clean_up_sentence(sent, remove_unk=False, remove_eos=True)
                 sent = [self.dicts["tgt"].getLabel(w) for w in sent]
-                print >> f, " ".join(sent)
+                print(" ".join(sent), file=f)
         loss, sent_reward, corpus_reward = metrics
         print("")
         print("Loss: %.6f" % loss)
