@@ -36,3 +36,10 @@ TODO: Chinese-English needs segmentation
 > cd $SCRIPT
 > bash make_data.sh de en
 ~~~~
+
+### Pretraining actor and critic
+
+~~~~
+> cd $SCRIPT
+> bash pretrain.sh en-de $YOUR_LOG_DIR
+~~~~
