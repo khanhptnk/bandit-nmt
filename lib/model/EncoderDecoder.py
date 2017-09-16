@@ -152,7 +152,8 @@ class NMTModel(nn.Module):
         emb, output, hidden, context = init_states
         
         preds = [] 
-        num_eos = targets[0].data.byte().new(targets.size(1)).zero_()
+        batch_size = targets.size(1)
+        num_eos = targets[0].data.byte().new(batch_size).zero_()
 
         for i in range(max_length):
             output, hidden = self.decoder.step(emb, output, hidden, context)
@@ -161,7 +162,7 @@ class NMTModel(nn.Module):
             preds.append(pred)
 
             # Stop if all sentences reach EOS.
-            num_eos = num_eos | (pred == lib.Constants.EOS)
+            num_eos |= (pred == lib.Constants.EOS)
             if num_eos.sum() == batch_size: break
 
             emb = self.decoder.word_lut(Variable(pred))
@@ -175,7 +176,8 @@ class NMTModel(nn.Module):
 
         outputs = []
         samples = []
-        num_eos = targets[0].data.byte().new(targets.size(1)).zero_()
+        batch_size = targets.size(1)
+        num_eos = targets[0].data.byte().new(batch_size).zero_()
 
         for i in range(max_length):
             output, hidden = self.decoder.step(emb, output, hidden, context)
@@ -185,8 +187,8 @@ class NMTModel(nn.Module):
             samples.append(sample)
 
             # Stop if all sentences reach EOS.
-             num_eos = num_eos | (sample == lib.Constants.EOS)
-            if num_eos.sum() == sample.size(0): break
+            num_eos |= (sample == lib.Constants.EOS)
+            if num_eos.sum() == batch_size: break
 
             emb = self.decoder.word_lut(Variable(sample))
 

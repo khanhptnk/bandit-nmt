@@ -21,4 +21,4 @@ python -u ../train.py -data $DATA_DIR/processed_all-train.pt \
                       -start_reinforce 11 \
                       -critic_pretrain_epochs 5 \
                       -end_epoch 15 \
-                      -save_dir $SAVE_DIR > $SAVE_DIR/log_$2.txt
+                      -save_dir $SAVE_DIR

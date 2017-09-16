@@ -22,9 +22,12 @@ class Evaluator(object):
         for i in range(len(data)):
             batch = data[i]
             targets = batch[1]
-
+            
+            attention_mask = batch[0][0].data.eq(lib.Constants.PAD).t()
+            self.model.decoder.attn.applyMask(attention_mask)
             outputs = self.model(batch, True)
 
+            
             weights = targets.ne(lib.Constants.PAD).float()
             num_words = weights.data.sum()
             _, loss = self.model.predict(outputs, targets, weights, self.loss_func)

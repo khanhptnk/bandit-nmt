@@ -16,12 +16,12 @@ class GlobalAttention(nn.Module):
     def applyMask(self, mask):
         self.mask = mask
 
-    def forward(self, input, context):
+    def forward(self, inputs, context):
         """
-        input: batch x dim
+        inputs: batch x dim
         context: batch x sourceL x dim
         """
-        targetT = self.linear_in(input).unsqueeze(2)  # batch x dim x 1
+        targetT = self.linear_in(inputs).unsqueeze(2)  # batch x dim x 1
 
         # Get attention
         attn = torch.bmm(context, targetT).squeeze(2)  # batch x sourceL
@@ -31,7 +31,7 @@ class GlobalAttention(nn.Module):
         attn3 = attn.view(attn.size(0), 1, attn.size(1))  # batch x 1 x sourceL
 
         weightedContext = torch.bmm(attn3, context).squeeze(1)  # batch x dim
-        contextCombined = torch.cat((weightedContext, input), 1)
+        contextCombined = torch.cat((weightedContext, inputs), 1)
 
         contextOutput = self.tanh(self.linear_out(contextCombined))
 
