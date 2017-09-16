@@ -44,9 +44,18 @@ TODO: Chinese-English needs segmentation
 > bash pretrain.sh en-de $YOUR_LOG_DIR
 ~~~~
 
+See `scripts/pretrain.sh` for more details.
+
+To simply supervisedly train a model for 10 epochs
+
+~~~~
+> cd $BANDIT_HOME
+> python train.py -data $YOUR_DATA -save_dir $YOUR_SAVE_DIR -end_epoch 10
+~~~~
+
 ### Reinforcement training from a pretrained model
 
 ~~~~
 > cd $BANDIT_HOME
-> python train.py -data $PATH_TO_YOUR_DATA -load_from $PATH_TO_YOUR_MODEL -save_dir $YOUR_SAVE_DIR -start_reinforce -1 -end_epoch 100 -critic_pretrain_epochs 1
+> python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -save_dir $YOUR_SAVE_DIR -start_reinforce -1 -end_epoch 100 -critic_pretrain_epochs 1
 ~~~~
