@@ -19,17 +19,15 @@ class Evaluator(object):
 
         all_preds = []
         all_targets = []
-        for i in xrange(len(data)):
-            # must be batch first for gather/scatter in DataParallel
-            batch = self.data[i]
+        for i in range(len(data)):
+            batch = data[i]
             targets = batch[1]
 
             outputs = self.model(batch, True)
 
             weights = targets.ne(lib.Constants.PAD).float()
             num_words = weights.data.sum()
-            _, loss = self.model.predict(outputs, targets, weights,
-                self.loss_func)
+            _, loss = self.model.predict(outputs, targets, weights, self.loss_func)
 
             preds = self.model.translate(batch, self.max_length)
             preds = preds.t().tolist()
@@ -42,7 +40,7 @@ class Evaluator(object):
             total_loss += loss
             total_words += num_words
             total_sent_reward += sum(rewards)
-            total_sents += batch[0].size(1)
+            total_sents += batch[1].size(1)
 
         loss = total_loss / total_words
         sent_reward = total_sent_reward / total_sents

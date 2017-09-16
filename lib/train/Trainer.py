@@ -55,6 +55,7 @@ class Trainer(object):
             torch.save(checkpoint, model_name)
             print("Save model as %s" % model_name)
 
+            
     def train_epoch(self, epoch):
         self.model.train()
 
@@ -72,8 +73,7 @@ class Trainer(object):
 
             weights = targets.ne(lib.Constants.PAD).float()
             num_words = weights.data.sum()
-            loss = self.model.backward(outputs, targets, weights, num_words,
-                self.loss_func)
+            loss = self.model.backward(outputs, targets, weights, num_words, self.loss_func)
 
             self.optim.step()
 
@@ -87,8 +87,7 @@ class Trainer(object):
                       (epoch, i, len(self.train_data),
                       math.exp(report_loss / report_words),
                       report_words / (time.time() - last_time),
-                      str(datetime.timedelta(
-                          seconds=int(time.time() - self.start_time)))))
+                      str(datetime.timedelta(seconds=int(time.time() - self.start_time)))))
 
                 report_loss = report_words = 0
                 last_time = time.time()

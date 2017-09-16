@@ -2,38 +2,27 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+from torch.nn.utils.rnn import pad_packed_sequence as unpack
+from torch.nn.utils.rnn import pack_padded_sequence as pack
 
 import lib
 
 class Encoder(nn.Module):
-
     def __init__(self, opt, dicts):
         self.layers = opt.layers
         self.num_directions = 2 if opt.brnn else 1
         assert opt.rnn_size % self.num_directions == 0
         self.hidden_size = opt.rnn_size // self.num_directions
-        input_size = opt.word_vec_size
 
         super(Encoder, self).__init__()
-        self.word_lut = nn.Embedding(dicts.size(),
-                                  opt.word_vec_size,
-                                  padding_idx=lib.Constants.PAD)
-        self.rnn = nn.LSTM(input_size, self.hidden_size,
-                        num_layers=opt.layers,
-                        dropout=opt.dropout,
-                        bidirectional=opt.brnn)
+        self.word_lut = nn.Embedding(dicts.size(), opt.word_vec_size, padding_idx=lib.Constants.PAD)
+        self.rnn = nn.LSTM(opt.word_vec_size, self.hidden_size, 
+            num_layers=opt.layers, dropout=opt.dropout, bidirectional=opt.brnn)
 
     def forward(self, inputs, hidden=None):
-        emb = self.word_lut(inputs)
-        if hidden is None:
-            batch_size = emb.size(1)
-            h_size = (self.layers * self.num_directions, batch_size,
-                self.hidden_size)
-            h_0 = Variable(emb.data.new(*h_size).zero_(), requires_grad=False)
-            c_0 = Variable(emb.data.new(*h_size).zero_(), requires_grad=False)
-            hidden = (h_0, c_0)
-
+        emb = pack(self.word_lut(inputs[0]), inputs[1])
         outputs, hidden_t = self.rnn(emb, hidden)
+        outputs = unpack(outputs)[0]
         return hidden_t, outputs
 
 
@@ -66,7 +55,6 @@ class StackedLSTM(nn.Module):
 
 
 class Decoder(nn.Module):
-
     def __init__(self, opt, dicts):
         self.layers = opt.layers
         self.input_feed = opt.input_feed
@@ -75,14 +63,10 @@ class Decoder(nn.Module):
             input_size += opt.rnn_size
 
         super(Decoder, self).__init__()
-        self.word_lut = nn.Embedding(dicts.size(),
-                                  opt.word_vec_size,
-                                  padding_idx=lib.Constants.PAD)
-        self.rnn = StackedLSTM(opt.layers, input_size, opt.rnn_size,
-            opt.dropout)
+        self.word_lut = nn.Embedding(dicts.size(), opt.word_vec_size, padding_idx=lib.Constants.PAD)
+        self.rnn = StackedLSTM(opt.layers, input_size, opt.rnn_size, opt.dropout)
         self.attn = lib.GlobalAttention(opt.rnn_size)
         self.dropout = nn.Dropout(opt.dropout)
-
         self.hidden_size = opt.rnn_size
 
     def step(self, emb, output, hidden, context):
@@ -98,7 +82,7 @@ class Decoder(nn.Module):
         embs = self.word_lut(inputs)
 
         outputs = []
-        for i in xrange(inputs.size(0)):
+        for i in range(inputs.size(0)):
             output, hidden = self.step(emb, output, hidden, context)
             outputs.append(output)
             emb = embs[i]
@@ -143,7 +127,7 @@ class NMTModel(nn.Module):
         if self.opt.cuda:
             init_token = init_token.cuda()
         emb = self.decoder.word_lut(init_token)
-        return tgt, (emb, init_output, enc_hidden, context.t())
+        return tgt, (emb, init_output, enc_hidden, context.transpose(0, 1))
 
     def forward(self, inputs, eval, return_logit=False):
         targets, init_states = self.initialize(inputs, eval)
@@ -153,14 +137,10 @@ class NMTModel(nn.Module):
             logits = self.generator(outputs)
             logits = logits.view(outputs.size(0), outputs.size(1), logits.size(-1))
             return logits
-
         return outputs
 
-    def backward(self, outputs, targets, weights, normalizer, criterion,
-            with_logit=False):
-        grad_output, loss = self.generator.backward(outputs, targets, weights,
-            criterion, with_logit)
-        grad_output /= normalizer
+    def backward(self, outputs, targets, weights, normalizer, criterion, with_logit=False):
+        grad_output, loss = self.generator.backward(outputs, targets, weights, normalizer, criterion, with_logit)
         outputs.backward(grad_output)
         return loss
 
@@ -173,7 +153,7 @@ class NMTModel(nn.Module):
 
         preds = []
         num_eos = None
-        for i in xrange(max_length):
+        for i in range(max_length):
             output, hidden = self.decoder.step(emb, output, hidden, context)
             logit = self.generator(output)
             pred = logit.max(1)[1].view(-1).data
@@ -199,7 +179,7 @@ class NMTModel(nn.Module):
         outputs = []
         samples = []
         num_eos = None
-        for i in xrange(max_length):
+        for i in range(max_length):
             output, hidden = self.decoder.step(emb, output, hidden, context)
             outputs.append(output)
             dist = F.softmax(self.generator(output))

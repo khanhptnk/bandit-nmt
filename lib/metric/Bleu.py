@@ -4,8 +4,8 @@ import math
 
 def _update_ngrams_count(sent, ngrams, count):
     length = len(sent)
-    for n in xrange(1, ngrams + 1):
-        for i in xrange(length - n + 1):
+    for n in range(1, ngrams + 1):
+        for i in range(length - n + 1):
             ngram = tuple(sent[i : (i + n)])
             count[ngram] += 1
 
@@ -14,7 +14,7 @@ def _compute_bleu(p, len_pred, len_gold, smooth):
     log_brevity = 1 - max(1, (len_gold + smooth) / (len_pred + smooth))
     log_score = 0
     ngrams = len(p) - 1
-    for n in xrange(1, ngrams + 1):
+    for n in range(1, ngrams + 1):
         if p[n][1] > 0:
             if p[n][0] == 0:
                 p[n][0] = 1e-16
@@ -35,10 +35,10 @@ def score_sentence(pred, gold, ngrams, smooth=0):
     # p[n][0] stores the number of overlapped n-grams.
     # p[n][1] is total # of n-grams in pred.
     p = []
-    for n in xrange(ngrams + 1):
+    for n in range(ngrams + 1):
         p.append([0, 0])
-    for i in xrange(len(pred)):
-        for n in xrange(1, ngrams + 1):
+    for i in range(len(pred)):
+        for n in range(1, ngrams + 1):
             if i - n + 1 < 0:
                 continue
             # n-gram is from i - n + 1 to i.
@@ -56,7 +56,7 @@ def score_sentence(pred, gold, ngrams, smooth=0):
 def score_corpus(preds, golds, ngrams, smooth=0):
     assert len(preds) == len(golds)
     p = []
-    for n in xrange(ngrams + 1):
+    for n in range(ngrams + 1):
         p.append([0, 0])
     len_pred = len_gold = 0
     for pred, gold in zip(preds, golds):
@@ -68,7 +68,7 @@ def score_corpus(preds, golds, ngrams, smooth=0):
         count_pred = defaultdict(int)
         _update_ngrams_count(pred, ngrams, count_pred)
 
-        for k, v in count_pred.iteritems():
+        for k, v in count_pred.items():
             n = len(k)
             p[n][0] += min(v, count_gold[k])
             p[n][1] += v

@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 def weighted_xent_loss(logits, targets, weights):
     log_dist = F.log_softmax(logits)
-    losses = -log_dist.gather(1, targets.unsqueeze(1))
+    losses = -log_dist.gather(1, targets.unsqueeze(1)).squeeze(1)
     losses = losses * weights
     return losses.sum()
 
