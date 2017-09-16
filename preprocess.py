@@ -40,8 +40,6 @@ parser.add_argument("-tgt_vocab_size", type=int, default=50000,
 
 parser.add_argument("-seq_length", type=int, default=50,
                     help="Maximum sequence length")
-parser.add_argument("-shuffle",    type=int, default=1,
-                    help="Shuffle data")
 parser.add_argument("-seed",       type=int, default=3435,
                     help="Random seed")
 
@@ -119,22 +117,9 @@ def makeData(which, srcFile, tgtFile, srcDicts, tgtDicts):
     tgtF.close()
 
     assert len(src) == len(tgt)
-    pos = range(len(src))
+    print("Prepared %d sentences (%d ignored due to length == 0 or > %d)" % (len(src), ignored, opt.seq_length))
 
-    if opt.shuffle == 1:
-        print("... shuffling sentences")
-        perm = torch.randperm(len(src))
-        pos, src, tgt = reorderSentences(pos, src, tgt, perm)
-        sizes = [sizes[idx] for idx in perm]
-
-    print("... sorting sentences by size")
-    _, perm = torch.sort(torch.Tensor(sizes))
-    pos, src, tgt = reorderSentences(pos, src, tgt, perm)
-
-    print("Prepared %d sentences (%d ignored due to length == 0 or > %d)" %
-          (len(src), ignored, opt.seq_length))
-
-    return src, tgt, pos
+    return src, tgt, range(len(src))
 
 
 def makeDataGeneral(which, src_path, tgt_path, dicts):
