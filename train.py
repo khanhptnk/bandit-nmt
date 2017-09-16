@@ -254,7 +254,8 @@ def main():
                 reinforce_trainer.train(opt.start_reinforce, opt.start_reinforce + opt.critic_pretrain_epochs - 1,
                     True, start_time)
             # Reinforce training.
-            reinforce_trainer.eval_data = test_data
+            reinforce_trainer = lib.ReinforceTrainer(model, critic, bandit_data, test_data, 
+                    metrics, dicts, optim, critic_optim, opt)
             reinforce_trainer.train(opt.start_reinforce + opt.critic_pretrain_epochs, opt.end_epoch,
                 False, start_time)
         # Supervised training only.

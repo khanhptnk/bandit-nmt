@@ -129,18 +129,17 @@ class NMTModel(nn.Module):
         emb = self.decoder.word_lut(init_token)
         return tgt, (emb, init_output, enc_hidden, context.transpose(0, 1))
 
-    def forward(self, inputs, eval, return_logit=False):
+    def forward(self, inputs, eval, regression=False):
         targets, init_states = self.initialize(inputs, eval)
         outputs = self.decoder(targets, init_states)
 
-        if return_logit:
+        if regression:
             logits = self.generator(outputs)
-            logits = logits.view(outputs.size(0), outputs.size(1), logits.size(-1))
-            return logits
+            return logits.view_as(targets)
         return outputs
 
-    def backward(self, outputs, targets, weights, normalizer, criterion, with_logit=False):
-        grad_output, loss = self.generator.backward(outputs, targets, weights, normalizer, criterion, with_logit)
+    def backward(self, outputs, targets, weights, normalizer, criterion, regression=False):
+        grad_output, loss = self.generator.backward(outputs, targets, weights, normalizer, criterion, regression)
         outputs.backward(grad_output)
         return loss
 
@@ -183,7 +182,7 @@ class NMTModel(nn.Module):
             output, hidden = self.decoder.step(emb, output, hidden, context)
             outputs.append(output)
             dist = F.softmax(self.generator(output))
-            sample = dist.multinomial(1, with_replacement=False).view(-1).data
+            sample = dist.multinomial(1, replacement=False).view(-1).data
             samples.append(sample)
 
             # Stop if all sentences reach EOS.

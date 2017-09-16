@@ -13,13 +13,10 @@ class BaseGenerator(nn.Module):
     def forward(self, inputs):
         return self.generator(inputs.contiguous().view(-1, inputs.size(-1)))
 
-    def backward(self, outputs, targets, weights, normalizer, criterion, with_logit=False):
+    def backward(self, outputs, targets, weights, normalizer, criterion, regression=False):
         outputs = Variable(outputs.data, requires_grad=True)
 
-        if with_logit:
-            logits = outputs.view(-1, outputs.size(-1))
-        else:
-            logits = self.forward(outputs)
+        logits = outputs.contiguous().view(-1) if regression else self.forward(outputs)
 
         loss = criterion(logits, targets.contiguous().view(-1), weights.contiguous().view(-1))
         loss.div(normalizer).backward()
@@ -47,7 +44,7 @@ class MemEfficientGenerator(BaseGenerator):
         self.batch_size = opt.max_generator_batches
         self.dim = dim
 
-    def backward(self, outputs, targets, weights, normalizer, criterion, with_logit=False):
+    def backward(self, outputs, targets, weights, normalizer, criterion, regression=False):
         outputs_split = torch.split(outputs, self.batch_size, self.dim)
         targets_split = torch.split(targets, self.batch_size, self.dim)
         weights_split = torch.split(weights, self.batch_size, self.dim)
@@ -56,7 +53,7 @@ class MemEfficientGenerator(BaseGenerator):
         loss = 0
         for out_t, targ_t, w_t in zip(outputs_split, targets_split, weights_split):
             grad_output_t, loss_t = super(MemEfficientGenerator, self).backward(
-                out_t, targ_t, w_t, normalizer, criterion, with_logit)
+                out_t, targ_t, w_t, normalizer, criterion, regression)
             grad_output.append(grad_output_t)
             loss += loss_t
 

@@ -10,9 +10,7 @@ import lib
 
 class ReinforceTrainer(object):
 
-    def __init__(self, actor, critic, train_data, eval_data, metrics, dicts,
-        optim, critic_optim, opt):
-
+    def __init__(self, actor, critic, train_data, eval_data, metrics, dicts, optim, critic_optim, opt):
         self.actor = actor
         self.critic = critic
 
@@ -26,9 +24,7 @@ class ReinforceTrainer(object):
 
         self.dicts = dicts
         
-        optim.last_loss = None
         self.optim = optim
-        critic_optim.last_loss = None
         self.critic_optim = critic_optim
 
         self.max_length = opt.max_predict_length
@@ -66,8 +62,7 @@ class ReinforceTrainer(object):
                         (epoch == start_epoch)
             if no_update:
                 print("No update...")
-            train_reward, critic_loss = self.train_epoch(epoch, pretrain_critic,
-                no_update)
+            train_reward, critic_loss = self.train_epoch(epoch, pretrain_critic, no_update)
             print("Train sentence reward: %.2f" % (train_reward * 100))
             print("Critic loss: %g" % critic_loss)
 
@@ -79,11 +74,11 @@ class ReinforceTrainer(object):
                 (valid_corpus_reward * 100))
 
             self.optim.updateLearningRate(-valid_sent_reward, epoch)
-            # Same lr when actor and critic are jointly trained.
+            # Actor and critic use the same lr when jointly trained.
+            # TODO: using small lr for critic is better?
             if not pretrain_critic:
                 self.critic_optim.set_lr(self.optim.lr)
 
-            #  (4) drop a checkpoint
             checkpoint = {
                 "model": self.actor,
                 "critic": self.critic,
@@ -105,69 +100,62 @@ class ReinforceTrainer(object):
     def train_epoch(self, epoch, pretrain_critic, no_update):
         self.actor.train()
 
-        # shuffle mini batch order
-        batchOrder = torch.randperm(len(self.train_data))
-
         total_reward, report_reward = 0, 0
         total_critic_loss, report_critic_loss = 0, 0
         total_sents, report_sents = 0, 0
         total_words, report_words = 0, 0
         last_time = time.time()
         for i in range(len(self.train_data)):
-
-            batchIdx = batchOrder[i] if epoch >= self.opt.curriculum else i
-            batch = self.train_data[batchIdx]
-            batch_size = batch[0].size(1)
+            batch = self.train_data[i]
             sources = batch[0]
             targets = batch[1]
+            batch_size = targets.size(1)
 
             self.actor.zero_grad()
             self.critic.zero_grad()
 
+            # Sample translations
+            attention_mask = sources[0].data.eq(lib.Constants.PAD).t()
+            self.actor.decoder.attn.applyMask(attention_mask)
             samples, outputs = self.actor.sample(batch, self.max_length)
 
             # Calculate rewards
-            rewards, samples = self.sent_reward_func(
-                samples.t().tolist(), targets.data.t().tolist())
+            rewards, samples = self.sent_reward_func(samples.t().tolist(), targets.data.t().tolist())
             reward = sum(rewards)
+
+            # Perturb rewards (if specified).
             if self.shape_func is not None:
                 rewards = self.shape_func(rewards)
+
             samples = Variable(torch.LongTensor(samples).t().contiguous())
-            rewards = Variable(
-                torch.FloatTensor([rewards] * samples.size(0)).contiguous())
+            rewards = Variable(torch.FloatTensor([rewards] * samples.size(0)).contiguous())
             if self.opt.cuda:
-                samples = samples.cuda(self.opt.gpus[0])
-                rewards = rewards.cuda(self.opt.gpus[0])
+                samples = samples.cuda()
+                rewards = rewards.cuda()
 
             # Update critic.
             critic_weights = samples.ne(lib.Constants.PAD).float()
             num_words = critic_weights.data.sum()
-
             if not no_update:
-                baselines = self.critic((sources, samples), eval=False,
-                    return_logit=True)
-                critic_loss = self.critic.backward(baselines, rewards,
-                    critic_weights, num_words, self.critic_loss_func,
-                    with_logit=True)
+                baselines = self.critic((sources, samples), eval=False, regression=True)
+                critic_loss = self.critic.backward(
+                    baselines, rewards, critic_weights, num_words, self.critic_loss_func, regression=True)
                 self.critic_optim.step()
             else:
                 critic_loss = 0
 
-            #print baselines[0][:10]
-            #print rewards[0][:10]
-
-
             # Update actor
             if not pretrain_critic and not no_update:
-                norm_rewards = Variable((rewards - baselines).data,
-                    requires_grad=False)
+                # Subtract baseline from reward
+                norm_rewards = Variable((rewards - baselines).data)
                 actor_weights = norm_rewards * critic_weights
-                # TODO: normalize loss here?
-                actor_loss = self.actor.backward(outputs, samples,
-                    actor_weights, 1, self.actor_loss_func)
+                # TODO: can use PyTorch reinforce() here but that function is a black box.
+                # This is an alternative way where you specify an objective that gives the same gradient
+                # as the policy gradient's objective, which looks much like weighted log-likelihood.
+                actor_loss = self.actor.backward(outputs, samples, actor_weights, 1, self.actor_loss_func)
                 self.optim.step()
 
-
+            # Gather stats
             total_reward += reward
             report_reward += reward
             total_sents += batch_size
@@ -183,8 +171,7 @@ class ReinforceTrainer(object):
                       (report_reward / report_sents) * 100,
                       report_critic_loss / report_words,
                       report_words / (time.time() - last_time),
-                      str(datetime.timedelta(
-                          seconds=int(time.time() - self.start_time)))))
+                      str(datetime.timedelta(seconds=int(time.time() - self.start_time)))))
 
                 report_reward = report_sents = report_critic_loss = report_words = 0
                 last_time = time.time()
