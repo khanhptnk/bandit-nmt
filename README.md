@@ -70,4 +70,11 @@ From a pretrained model
 > python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -save_dir $YOUR_SAVE_DIR -start_reinforce -1 -end_epoch 100 -critic_pretrain_epochs 5
 ~~~~
 
+#### Pertubed rewards
+
+For example, use thumb up/thump down reward:
+~~~~
+> python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -save_dir $YOUR_SAVE_DIR -start_reinforce -1 -end_epoch 100 -critic_pretrain_epochs 5 -pert_func bin -pert_param 1
+~~~~
+
 
