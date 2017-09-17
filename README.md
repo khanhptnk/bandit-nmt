@@ -14,14 +14,13 @@ Set home directory:
 
 ### Data extraction
 
-Download pre-processing scripts:
-
+Download pre-processing scripts
 ~~~~
 > cd $DATA/scripts
 > bash download_scripts.sh
 ~~~~
 
-For German-English:
+For German-English
 ~~~~
 > cd $DATA/en-de
 > bash extract_data_de_en.sh
@@ -39,8 +38,9 @@ TODO: Chinese-English needs segmentation
 > bash make_data.sh de en
 ~~~~
 
-### Pretraining actor and critic
+### Pretraining
 
+Pretrain both actor and critic
 ~~~~
 > cd $SCRIPT
 > bash pretrain.sh en-de $YOUR_LOG_DIR
@@ -48,16 +48,26 @@ TODO: Chinese-English needs segmentation
 
 See `scripts/pretrain.sh` for more details.
 
-To simply supervisedly train a model for 10 epochs
-
+Pretrain actor only
 ~~~~
 > cd $BANDIT_HOME
 > python train.py -data $YOUR_DATA -save_dir $YOUR_SAVE_DIR -end_epoch 10
 ~~~~
 
-### Reinforcement training from a pretrained model
+### Reinforcement training 
 
 ~~~~
 > cd $BANDIT_HOME
-> python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -save_dir $YOUR_SAVE_DIR -start_reinforce -1 -end_epoch 100 -critic_pretrain_epochs 1
 ~~~~
+
+From scratch
+~~~~
+> python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -save_dir $YOUR_SAVE_DIR -start_reinforce 10 -end_epoch 100 -critic_pretrain_epochs 5
+~~~~
+
+From a pretrained model
+~~~~
+> python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -save_dir $YOUR_SAVE_DIR -start_reinforce -1 -end_epoch 100 -critic_pretrain_epochs 5
+~~~~
+
+
