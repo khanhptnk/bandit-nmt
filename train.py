@@ -94,9 +94,9 @@ parser.add_argument("-max_predict_length", type=int, default=50,
 
 
 # Reward shaping
-parser.add_argument("-shape_func", type=str, default=None,
+parser.add_argument("-pert_func", type=str, default=None,
         help="Reward-shaping function.")
-parser.add_argument("-shape_param", type=float, default=None,
+parser.add_argument("-pert_param", type=float, default=None,
         help="Reward-shaping parameter.")
 
 # Others
@@ -216,8 +216,8 @@ def main():
     metrics["critic_loss"] = lib.Loss.weighted_mse
     metrics["sent_reward"] = lib.Reward.sentence_bleu
     metrics["corp_reward"] = lib.Reward.corpus_bleu
-    if opt.shape_func is not None:
-        opt.shape_func = lib.RewardShaping(opt.shape_func, opt.shape_param)
+    if opt.pert_func is not None:
+        opt.pert_func = lib.RewardShaping(opt.pert_func, opt.pert_param)
 
 
     # Evaluate model on heldout dataset.

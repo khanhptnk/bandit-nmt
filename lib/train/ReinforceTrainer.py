@@ -28,7 +28,7 @@ class ReinforceTrainer(object):
         self.critic_optim = critic_optim
 
         self.max_length = opt.max_predict_length
-        self.shape_func = opt.shape_func
+        self.pert_func = opt.pert_func
         self.opt = opt
 
         print("")
@@ -124,8 +124,8 @@ class ReinforceTrainer(object):
             reward = sum(rewards)
 
             # Perturb rewards (if specified).
-            if self.shape_func is not None:
-                rewards = self.shape_func(rewards)
+            if self.pert_func is not None:
+                rewards = self.pert_func(rewards)
 
             samples = Variable(torch.LongTensor(samples).t().contiguous())
             rewards = Variable(torch.FloatTensor([rewards] * samples.size(0)).contiguous())
