@@ -27,7 +27,7 @@ def _noise(rs, std):
 def _curve(rs, p):
     return [r**p for r in rs]
 
-class RewardShaping(object):
+class PertFunction(object):
     def __init__(self, func_name, param):
         self.param = param
         if func_name == "bin":

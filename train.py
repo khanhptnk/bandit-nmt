@@ -217,7 +217,7 @@ def main():
     metrics["sent_reward"] = lib.Reward.sentence_bleu
     metrics["corp_reward"] = lib.Reward.corpus_bleu
     if opt.pert_func is not None:
-        opt.pert_func = lib.RewardShaping(opt.pert_func, opt.pert_param)
+        opt.pert_func = lib.PertFunction(opt.pert_func, opt.pert_param)
 
 
     # Evaluate model on heldout dataset.
