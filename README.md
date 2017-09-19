@@ -2,10 +2,13 @@
 
 This is code repo for our EMNLP 2017 paper ["Reinforcement Learning for Bandit Neural Machine Translation with Simulated Human Feedback"](https://arxiv.org/pdf/1707.07402.pdf), which implements the [A2C algorithm](https://arxiv.org/pdf/1602.01783.pdf) on top of a [neural encoder-decoder model](https://arxiv.org/pdf/1508.04025.pdf) and benchmarks the combination under simulated noisy rewards. 
 
+Requirements:
+- Python 3.6
+- PyTorch 0.2
+
 **NOTE**: as of Sep 16 2017, the code got 3x slower when I upgraded to PyTorch 2.0. This is a known issue and [PyTorch is fixing it](https://github.com/pytorch/pytorch/issues/2518#issuecomment-327835296). 
 
 **IMPORTANT**: Set home directory (otherwise scripts will not run correctly):
-
 ~~~~
 > export BANDIT_HOME=$PWD
 > export DATA=$BANDIT_HOME/data
@@ -77,4 +80,4 @@ For example, use thumb up/thump down reward:
 > python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -save_dir $YOUR_SAVE_DIR -start_reinforce -1 -end_epoch 100 -critic_pretrain_epochs 5 -pert_func bin -pert_param 1
 ~~~~
 
-
+See `lib/metric/PertFunction.py` for more types of function.
