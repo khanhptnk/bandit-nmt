@@ -2,10 +2,13 @@
 
 This is code repo for our EMNLP 2017 paper ["Reinforcement Learning for Bandit Neural Machine Translation with Simulated Human Feedback"](https://arxiv.org/pdf/1707.07402.pdf), which implements the [A2C algorithm](https://arxiv.org/pdf/1602.01783.pdf) on top of a [neural encoder-decoder model](https://arxiv.org/pdf/1508.04025.pdf) and benchmarks the combination under simulated noisy rewards. 
 
+Requirements:
+- Python 3.6
+- PyTorch 0.2
+
 **NOTE**: as of Sep 16 2017, the code got 3x slower when I upgraded to PyTorch 2.0. This is a known issue and [PyTorch is fixing it](https://github.com/pytorch/pytorch/issues/2518#issuecomment-327835296). 
 
 **IMPORTANT**: Set home directory (otherwise scripts will not run correctly):
-
 ~~~~
 > export BANDIT_HOME=$PWD
 > export DATA=$BANDIT_HOME/data
