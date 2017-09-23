@@ -6,7 +6,7 @@ Requirements:
 - Python 3.6
 - PyTorch 0.2
 
-**NOTE**: as of Sep 16 2017, the code got 3x slower when I upgraded to PyTorch 2.0. This is a known issue and [PyTorch is fixing it](https://github.com/pytorch/pytorch/issues/2518#issuecomment-327835296). 
+**NOTE**: as of Sep 16 2017, the code got 2x slower when I upgraded to PyTorch 2.0. This is a known issue and [PyTorch is fixing it](https://github.com/pytorch/pytorch/issues/2518#issuecomment-327835296). 
 
 **IMPORTANT**: Set home directory (otherwise scripts will not run correctly):
 ~~~~
