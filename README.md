@@ -29,7 +29,7 @@ For German-English
 > bash extract_data_de_en.sh
 ~~~~
 
-Data should be ready in `$BAND_HOME/data/en-de/prep`
+Data should be ready in `$DATA/en-de/prep`
 
 TODO: Chinese-English needs segmentation
 
