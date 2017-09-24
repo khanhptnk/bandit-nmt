@@ -82,3 +82,20 @@ For example, use thumb up/thump down reward:
 ~~~~
 
 See `lib/metric/PertFunction.py` for more types of function.
+
+### Evaluation
+
+~~~~
+> cd $BANDIT_HOME
+~~~~
+
+On heldout datasets (heldout BLEU):
+~~~~
+> python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -eval -save_dir $THIS_FLAG_IS_NOT_USED_BUT_REQUIRED
+~~~~
+
+On bandit set (per-sentence BLEU):
+~~~~
+> python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -eval_sample -save_dir $THIS_FLAG_IS_NOT_USED_BUT_REQUIRED
+~~~~
+
