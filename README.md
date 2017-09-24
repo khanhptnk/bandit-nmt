@@ -89,7 +89,7 @@ See `lib/metric/PertFunction.py` for more types of function.
 > cd $BANDIT_HOME
 ~~~~
 
-On heldout datasets (heldout BLEU):
+On heldout sets (heldout BLEU):
 ~~~~
 > python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -eval -save_dir .
 ~~~~
