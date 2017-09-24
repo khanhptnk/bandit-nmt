@@ -91,11 +91,11 @@ See `lib/metric/PertFunction.py` for more types of function.
 
 On heldout datasets (heldout BLEU):
 ~~~~
-> python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -eval -save_dir $THIS_FLAG_IS_NOT_USED_BUT_REQUIRED
+> python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -eval -save_dir .
 ~~~~
 
 On bandit set (per-sentence BLEU):
 ~~~~
-> python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -eval_sample -save_dir $THIS_FLAG_IS_NOT_USED_BUT_REQUIRED
+> python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -eval_sample -save_dir .
 ~~~~
 
