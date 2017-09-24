@@ -6,7 +6,7 @@ Requirements:
 - Python 3.6
 - PyTorch 0.2
 
-**NOTE**: as of Sep 16 2017, the code got 3x slower when I upgraded to PyTorch 2.0. This is a known issue and [PyTorch is fixing it](https://github.com/pytorch/pytorch/issues/2518#issuecomment-327835296). 
+**NOTE**: as of Sep 16 2017, the code got 2x slower when I upgraded to PyTorch 2.0. This is a known issue and [PyTorch is fixing it](https://github.com/pytorch/pytorch/issues/2518#issuecomment-327835296). 
 
 **IMPORTANT**: Set home directory (otherwise scripts will not run correctly):
 ~~~~
@@ -29,7 +29,7 @@ For German-English
 > bash extract_data_de_en.sh
 ~~~~
 
-Data should be ready in `$BAND_HOME/data/en-de/prep`
+Data should be ready in `$DATA/en-de/prep`
 
 TODO: Chinese-English needs segmentation
 
@@ -73,10 +73,11 @@ From a pretrained model
 > python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -save_dir $YOUR_SAVE_DIR -start_reinforce -1 -end_epoch 100 -critic_pretrain_epochs 5
 ~~~~
 
-### Pertubed rewards
+### Perturbed rewards
 
 For example, use thumb up/thump down reward:
 ~~~~
+> cd $BANDIT_HOME
 > python train.py -data $YOUR_DATA -load_from $YOUR_MODEL -save_dir $YOUR_SAVE_DIR -start_reinforce -1 -end_epoch 100 -critic_pretrain_epochs 5 -pert_func bin -pert_param 1
 ~~~~
 
