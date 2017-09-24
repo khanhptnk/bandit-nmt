@@ -1,7 +1,6 @@
 lang=$1
 DATA_DIR=$DATA/$lang
-MODEL_DIR=$LOG/$lang
-SAVE_DIR=$MODEL_DIR/$2
+SAVE_DIR=$2
 
 if [ ! -d "$DATA_DIR" ]; then
     echo "Can't find data dir $DATA_DIR!"

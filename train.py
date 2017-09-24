@@ -43,7 +43,7 @@ parser.add_argument("-brnn_merge", default="concat",
 parser.add_argument("-batch_size", type=int, default=64,
                     help="Maximum batch size")
 parser.add_argument("-max_generator_batches", type=int, default=32,
-                    help="""Split softmax input into small batches for memory efficiency. 
+                    help="""Split softmax input into small batches for memory efficiency.
                     Higher is faster, but uses more memory.""")
 parser.add_argument("-end_epoch", type=int, default=50,
                     help="Epoch to stop training.")
@@ -78,7 +78,7 @@ parser.add_argument("-seed", type=int, default=3435,
 
 # Critic
 parser.add_argument("-start_reinforce", type=int, default=None,
-                    help="""Epoch to start reinforcement training. 
+                    help="""Epoch to start reinforcement training.
                     Use -1 to start immediately.""")
 parser.add_argument("-critic_pretrain_epochs", type=int, default=0,
                     help="Number of epochs to pretrain critic (actor fixed).")
@@ -156,9 +156,9 @@ def create_critic(checkpoint, dicts, opt):
         critic_optim = checkpoint["critic_optim"]
     else:
         critic, critic_optim = create_model(lib.NMTModel, dicts, 1)
-    if opt.cuda: 
+    if opt.cuda:
         critic.cuda(opt.gpus[0])
-    return critic, critic_optim 
+    return critic, critic_optim
 
 def main():
 
@@ -232,8 +232,8 @@ def main():
     elif opt.eval_sample:
         opt.no_update = True
         critic, critic_optim = create_critic(checkpoint, dicts, opt)
-        reinforce_trainer = lib.ReinforceTrainer(model, critic, train_data, 
-            valid_data, metrics, dicts, optim, critic_optim, opt)
+        reinforce_trainer = lib.ReinforceTrainer(model, critic, bandit_data, test_data,
+            metrics, dicts, optim, critic_optim, opt)
         reinforce_trainer.train(opt.start_epoch, opt.start_epoch, False)
     elif opt.sup_train_on_bandit:
         optim.set_lr(opt.reinforce_lr)
@@ -246,15 +246,15 @@ def main():
             # Supervised training.
             xent_trainer.train(opt.start_epoch, opt.start_reinforce - 1, start_time)
             # Create critic here to not affect random seed.
-            critic, critic_optim = create_critic(checkpoint, dicts, opt) 
+            critic, critic_optim = create_critic(checkpoint, dicts, opt)
             # Pretrain critic.
             if opt.critic_pretrain_epochs > 0:
-                reinforce_trainer = lib.ReinforceTrainer(model, critic, supervised_data, valid_data, 
+                reinforce_trainer = lib.ReinforceTrainer(model, critic, supervised_data, test_data,
                     metrics, dicts, optim, critic_optim, opt)
-                reinforce_trainer.train(opt.start_reinforce, opt.start_reinforce + opt.critic_pretrain_epochs - 1,
-                    True, start_time)
+                reinforce_trainer.train(opt.start_reinforce,
+                    opt.start_reinforce + opt.critic_pretrain_epochs - 1, True, start_time)
             # Reinforce training.
-            reinforce_trainer = lib.ReinforceTrainer(model, critic, bandit_data, test_data, 
+            reinforce_trainer = lib.ReinforceTrainer(model, critic, bandit_data, test_data,
                     metrics, dicts, optim, critic_optim, opt)
             reinforce_trainer.train(opt.start_reinforce + opt.critic_pretrain_epochs, opt.end_epoch,
                 False, start_time)

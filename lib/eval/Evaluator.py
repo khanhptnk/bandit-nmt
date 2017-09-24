@@ -1,3 +1,4 @@
+from __future__ import division
 import lib
 
 class Evaluator(object):
@@ -22,12 +23,12 @@ class Evaluator(object):
         for i in range(len(data)):
             batch = data[i]
             targets = batch[1]
-            
+
             attention_mask = batch[0][0].data.eq(lib.Constants.PAD).t()
             self.model.decoder.attn.applyMask(attention_mask)
             outputs = self.model(batch, True)
 
-            
+
             weights = targets.ne(lib.Constants.PAD).float()
             num_words = weights.data.sum()
             _, loss = self.model.predict(outputs, targets, weights, self.loss_func)
@@ -65,8 +66,8 @@ class Evaluator(object):
         loss, sent_reward, corpus_reward = metrics
         print("")
         print("Loss: %.6f" % loss)
-        print("Sentence reward: %.6f" % sent_reward)
-        print("Corpus reward: %.6f" % corpus_reward)
+        print("Sentence reward: %.2f" % (sent_reward * 100))
+        print("Corpus reward: %.2f" % (corpus_reward * 100))
         print("Predictions saved to %s" % pred_file)
 
 

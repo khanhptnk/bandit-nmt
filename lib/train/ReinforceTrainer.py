@@ -23,7 +23,7 @@ class ReinforceTrainer(object):
         self.sent_reward_func = metrics["sent_reward"]
 
         self.dicts = dicts
-        
+
         self.optim = optim
         self.critic_optim = critic_optim
 
@@ -43,7 +43,7 @@ class ReinforceTrainer(object):
             self.start_time = start_time
         self.optim.last_loss = self.critic_optim.last_loss = None
         self.optim.set_lr(self.opt.reinforce_lr)
-        
+
         #  Use large learning rate for critic during pre-training.
         if pretrain_critic:
             self.critic_optim.set_lr(1e-3)
@@ -60,8 +60,9 @@ class ReinforceTrainer(object):
                 print("Pretrain critic...")
             no_update = self.opt.no_update and (not pretrain_critic) and \
                         (epoch == start_epoch)
-            if no_update:
-                print("No update...")
+
+            if no_update: print("No update...")
+
             train_reward, critic_loss = self.train_epoch(epoch, pretrain_critic, no_update)
             print("Train sentence reward: %.2f" % (train_reward * 100))
             print("Critic loss: %g" % critic_loss)
@@ -72,6 +73,8 @@ class ReinforceTrainer(object):
             print("Validation sentence reward: %.2f" % (valid_sent_reward * 100))
             print("Validation corpus reward: %.2f" %
                 (valid_corpus_reward * 100))
+
+            if no_update: break
 
             self.optim.updateLearningRate(-valid_sent_reward, epoch)
             # Actor and critic use the same lr when jointly trained.
