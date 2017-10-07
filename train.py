@@ -21,7 +21,7 @@ parser.add_argument("-save_dir", required=True,
 parser.add_argument("-load_from", help="Path to load a pretrained model.")
 
 ## Model options
-
+parser.add_argument("-cell_type", type=str, default="lstm")
 parser.add_argument("-layers", type=int, default=1,
                     help="Number of layers in the LSTM encoder/decoder")
 parser.add_argument("-rnn_size", type=int, default=500,
@@ -138,7 +138,10 @@ def create_optim(model):
 
 def create_model(model_class, dicts, gen_out_size):
     encoder = lib.Encoder(opt, dicts["src"])
-    decoder = lib.Decoder(opt, dicts["tgt"])
+    if opt.cell_type == "lstm":
+        decoder = lib.Decoder(opt, dicts["tgt"])
+    elif opt.cell_type == "sru":
+        decoder = lib.SRUDecoder(opt, dicts["tgt"])
     # Use memory efficient generator when output size is large and
     # max_generator_batches is smaller than batch_size.
     if opt.max_generator_batches < opt.batch_size and gen_out_size > 1:

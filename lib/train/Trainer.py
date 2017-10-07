@@ -55,11 +55,11 @@ class Trainer(object):
             torch.save(checkpoint, model_name)
             print("Save model as %s" % model_name)
 
-            
+
     def train_epoch(self, epoch):
         self.model.train()
-
         self.train_data.shuffle()
+
 
         total_loss, report_loss = 0, 0
         total_words, report_words = 0, 0
@@ -70,7 +70,13 @@ class Trainer(object):
 
             self.model.zero_grad()
             attention_mask = batch[0][0].data.eq(lib.Constants.PAD).t()
-            self.model.decoder.attn.applyMask(attention_mask)
+            if self.opt.cell_type == "lstm":
+                self.model.decoder.attn.applyMask(attention_mask)
+            elif self.opt.cell_type == "sru":
+                seq_attention_mask = attention_mask.expand(
+                    targets.size(0), attention_mask.size(0), attention_mask.size(1)).contiguous().view(
+                    targets.size(0) * attention_mask.size(0), attention_mask.size(1))
+                self.model.decoder.attn.applyMask(seq_attention_mask)
             outputs = self.model(batch, eval=False)
 
             weights = targets.ne(lib.Constants.PAD).float()

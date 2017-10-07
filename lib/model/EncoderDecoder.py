@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.nn.utils.rnn import pad_packed_sequence as unpack
 from torch.nn.utils.rnn import pack_padded_sequence as pack
+from sru import SRU, SRUCell
 
 import lib
 
@@ -16,13 +17,24 @@ class Encoder(nn.Module):
 
         super(Encoder, self).__init__()
         self.word_lut = nn.Embedding(dicts.size(), opt.word_vec_size, padding_idx=lib.Constants.PAD)
-        self.rnn = nn.LSTM(opt.word_vec_size, self.hidden_size, 
+
+        self.cell_type = opt.cell_type
+        if self.cell_type == "lstm":
+            cell_func = nn.LSTM
+        elif self.cell_type == "sru":
+            cell_func = SRU
+
+        self.rnn = cell_func(opt.word_vec_size, self.hidden_size,
             num_layers=opt.layers, dropout=opt.dropout, bidirectional=opt.brnn)
 
     def forward(self, inputs, hidden=None):
-        emb = pack(self.word_lut(inputs[0]), inputs[1])
-        outputs, hidden_t = self.rnn(emb, hidden)
-        outputs = unpack(outputs)[0]
+        if self.cell_type == "sru":
+            emb = self.word_lut(inputs[0])
+            outputs, hidden_t = self.rnn(emb, hidden)
+        else:
+            emb = pack(self.word_lut(inputs[0]), inputs[1])
+            outputs, hidden_t = self.rnn(emb, hidden)
+            outputs = unpack(outputs)[0]
         return hidden_t, outputs
 
 
@@ -37,33 +49,60 @@ class StackedLSTM(nn.Module):
             self.layers.append(nn.LSTMCell(input_size, rnn_size))
             input_size = rnn_size
 
-    def forward(self, inputs, hidden):
+    def forward(self, inp, hidden):
         h_0, c_0 = hidden
-        h_1, c_1 = [], []
+        hs, cs = [], []
         for i, layer in enumerate(self.layers):
-            h_1_i, c_1_i = layer(inputs, (h_0[i], c_0[i]))
-            inputs = h_1_i
+            h_i, c_i = layer(inp, (h_0[i], c_0[i]))
+            inp = h_i
             if i != self.num_layers:
-                inputs = self.dropout(inputs)
-            h_1 += [h_1_i]
-            c_1 += [c_1_i]
+                inp = self.dropout(inp)
+            hs += [h_i]
+            cs += [c_i]
 
-        h_1 = torch.stack(h_1)
-        c_1 = torch.stack(c_1)
+        hs = torch.stack(hs)
+        cs = torch.stack(cs)
 
-        return inputs, (h_1, c_1)
+        return inp, (hs, cs)
+
+
+class StackedSRU(nn.Module):
+    def __init__(self, num_layers, input_size, rnn_size, dropout):
+        super(StackedSRU, self).__init__()
+        self.dropout = nn.Dropout(dropout)
+        self.num_layers = num_layers
+        self.layers = nn.ModuleList()
+
+        for i in range(num_layers):
+            self.layers.append(SRUCell(input_size, rnn_size))
+            input_size = rnn_size
+
+    def forward(self, inp, c_0):
+        cs = []
+        for i, layer in enumerate(self.layers):
+            h_i, c_i = layer(inp, c_0[i])
+            inp = h_i
+            if i != self.num_layers:
+                inp = self.dropout(inp)
+            cs += [c_i]
+
+        cs = torch.stack(cs)
+
+        return inp, cs
 
 
 class Decoder(nn.Module):
     def __init__(self, opt, dicts):
         self.layers = opt.layers
         self.input_feed = opt.input_feed
+
+        super(Decoder, self).__init__()
+        self.word_lut = nn.Embedding(dicts.size(), opt.word_vec_size, padding_idx=lib.Constants.PAD)
+
         input_size = opt.word_vec_size
         if self.input_feed:
             input_size += opt.rnn_size
 
-        super(Decoder, self).__init__()
-        self.word_lut = nn.Embedding(dicts.size(), opt.word_vec_size, padding_idx=lib.Constants.PAD)
         self.rnn = StackedLSTM(opt.layers, input_size, opt.rnn_size, opt.dropout)
         self.attn = lib.GlobalAttention(opt.rnn_size)
         self.dropout = nn.Dropout(opt.dropout)
@@ -89,6 +128,52 @@ class Decoder(nn.Module):
 
         outputs = torch.stack(outputs)
         return outputs
+
+
+class SRUDecoder(nn.Module):
+    def __init__(self, opt, dicts):
+        self.layers = opt.layers
+
+        super(SRUDecoder, self).__init__()
+        self.word_lut = nn.Embedding(dicts.size(), opt.word_vec_size, padding_idx=lib.Constants.PAD)
+
+        self.rnn = SRU(opt.word_vec_size, opt.rnn_size, num_layers=opt.layers, dropout=opt.dropout)
+        self.attn = lib.GlobalAttention(opt.rnn_size)
+        self.dropout = nn.Dropout(opt.dropout)
+        self.hidden_size = opt.rnn_size
+
+    def step(self, emb, output, hidden, context):
+        outputs, hidden = self.rnn(emb.unsqueeze(0), hidden)
+        output, attn = self.attn(outputs[0], context)
+        output = self.dropout(output)
+        return output, hidden
+
+    def forward(self, inputs, init_states):
+        emb, output, hidden, context = init_states
+        embs = self.word_lut(inputs[:-1])
+        embs = torch.cat((emb.unsqueeze(0), embs), dim=0)
+        outputs, _ = self.rnn(embs, hidden)
+
+        """
+        new_outputs = []
+        for output in outputs:
+            new_output, attn = self.attn(output, context)
+            new_outputs.append(self.dropout(new_output))
+        outputs = torch.stack(new_outputs)
+        """
+
+        seq_len = outputs.size(0)
+
+        contexts = context.expand(
+            seq_len, context.size(0), context.size(1), context.size(2)).contiguous().view(
+                seq_len * context.size(0), context.size(1), context.size(2))
+        outputs = outputs.view(-1, self.hidden_size)
+        #print(outputs.size(), contexts.size())
+        outputs, _ = self.attn(outputs, contexts)
+        outputs = outputs.view(seq_len, -1, self.hidden_size)
+
+        return outputs
+
 
 
 class NMTModel(nn.Module):
@@ -120,8 +205,11 @@ class NMTModel(nn.Module):
         tgt = inputs[1]
         enc_hidden, context = self.encoder(src)
         init_output = self.make_init_decoder_output(context)
-        enc_hidden = (self._fix_enc_hidden(enc_hidden[0]),
-                      self._fix_enc_hidden(enc_hidden[1]))
+
+        if self.opt.cell_type == "lstm":
+            enc_hidden = (self._fix_enc_hidden(enc_hidden[0]),
+                          self._fix_enc_hidden(enc_hidden[1]))
+
         init_token = Variable(torch.LongTensor(
             [lib.Constants.BOS] * init_output.size(0)), volatile=eval)
         if self.opt.cuda:
@@ -149,8 +237,8 @@ class NMTModel(nn.Module):
     def translate(self, inputs, max_length):
         targets, init_states = self.initialize(inputs, eval=True)
         emb, output, hidden, context = init_states
-        
-        preds = [] 
+
+        preds = []
         batch_size = targets.size(1)
         num_eos = targets[0].data.byte().new(batch_size).zero_()
 

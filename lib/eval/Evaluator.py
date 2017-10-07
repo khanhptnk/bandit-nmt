@@ -9,6 +9,7 @@ class Evaluator(object):
         self.corpus_reward_func = metrics["corp_reward"]
         self.dicts = dicts
         self.max_length = opt.max_predict_length
+        self.opt = opt
 
     def eval(self, data, pred_file=None):
         self.model.eval()
@@ -25,7 +26,13 @@ class Evaluator(object):
             targets = batch[1]
 
             attention_mask = batch[0][0].data.eq(lib.Constants.PAD).t()
-            self.model.decoder.attn.applyMask(attention_mask)
+            if self.opt.cell_type == "lstm":
+                self.model.decoder.attn.applyMask(attention_mask)
+            elif self.opt.cell_type == "sru":
+                seq_attention_mask = attention_mask.expand(
+                    targets.size(0), attention_mask.size(0), attention_mask.size(1)).contiguous().view(
+                    targets.size(0) * attention_mask.size(0), attention_mask.size(1))
+                self.model.decoder.attn.applyMask(seq_attention_mask)
             outputs = self.model(batch, True)
 
 
@@ -33,6 +40,8 @@ class Evaluator(object):
             num_words = weights.data.sum()
             _, loss = self.model.predict(outputs, targets, weights, self.loss_func)
 
+            if self.opt.cell_type == "sru":
+                self.model.decoder.attn.applyMask(attention_mask)
             preds = self.model.translate(batch, self.max_length)
             preds = preds.t().tolist()
             targets = targets.data.t().tolist()
