@@ -83,6 +83,7 @@ class Trainer(object):
             total_loss += loss
             total_words += num_words
             report_words += num_words
+
             if i % self.opt.log_interval == 0 and i > 0:
                 print("""Epoch %3d, %6d/%d batches;
                       perplexity: %8.2f; %5.0f tokens/s; %s elapsed""" %

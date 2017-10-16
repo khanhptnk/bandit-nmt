@@ -146,18 +146,24 @@ class NMTModel(nn.Module):
     def predict(self, outputs, targets, weights, criterion):
         return self.generator.predict(outputs, targets, weights, criterion)
 
-    def translate(self, inputs, max_length):
+    def translate(self, inputs, max_length, return_probs=False):
         targets, init_states = self.initialize(inputs, eval=True)
         emb, output, hidden, context = init_states
         
-        preds = [] 
+        preds = []
+        if return_probs: log_probs = []
+
         batch_size = targets.size(1)
         num_eos = targets[0].data.byte().new(batch_size).zero_()
 
         for i in range(max_length):
             output, hidden = self.decoder.step(emb, output, hidden, context)
             logit = self.generator(output)
-            pred = logit.max(1)[1].view(-1).data
+
+            if return_probs:
+                log_prob = F.log_softmax(logit)
+                log_probs.append(log_prob.max(1)[0].data)
+            pred = logit.max(1)[1].data
             preds.append(pred)
 
             # Stop if all sentences reach EOS.
@@ -167,7 +173,11 @@ class NMTModel(nn.Module):
             emb = self.decoder.word_lut(Variable(pred))
 
         preds = torch.stack(preds)
-        return preds
+        if return_probs:
+            log_probs = torch.stack(log_probs)
+            return preds, log_probs
+        else:
+            return preds
 
     def sample(self, inputs, max_length):
         targets, init_states = self.initialize(inputs, eval=False)
@@ -193,6 +203,68 @@ class NMTModel(nn.Module):
 
         outputs = torch.stack(outputs)
         samples = torch.stack(samples)
+        return samples, outputs
+
+    def osd_decode(self, inputs, max_length, pos):
+
+        def _batch(*args):
+            res = tuple([torch.cat(d, 0) for d in args])
+            return res[0] if len(res) == 1 else res
+
+        def _unbatch(*args):
+            res = tuple([d.split(1) for d in args])
+            return res[0] if len(res) == 1 else res
+
+        targets, init_states = self.initialize(inputs, eval=False)
+        emb, output, hidden, context = init_states
+        
+        samples = [] 
+        outputs = []
+        batch_size = targets.size(1)
+        num_eos = targets[0].data.byte().new(batch_size).zero_()
+
+        for i in range(max_length):
+            output, hidden = self.decoder.step(emb, output, hidden, context)
+            outputs.append(output)
+            logit = _unbatch(self.generator(output))
+           
+            logit_max = []
+            logit_sample = []
+            for b, l in enumerate(logit):
+                if pos[b] == i:
+                    logit_sample.append(l)
+                else:
+                    logit_max.append(l)
+
+            if logit_sample:
+                logit_sample = _batch(logit_sample)
+                inp_sample = F.softmax(logit_sample).multinomial(1, replacement=False).view(-1).data
+                inp_sample = iter(_unbatch(inp_sample))
+            else:
+                inp_sample = None
+
+            if logit_max:
+               logit_max = _batch(logit_max)
+               inp_max = logit_max.max(1)[1].data
+               inp_max = iter(_unbatch(inp_max))
+            else:
+               inp_max = None
+
+            inp = []
+            for b in range(batch_size):
+                inp.append(next(inp_sample) if pos[b] == i else next(inp_max))
+      
+            inp = _batch(inp)
+            samples.append(inp)
+
+            # Stop if all sentences reach EOS.
+            num_eos |= (inp == lib.Constants.EOS)
+            if num_eos.sum() == batch_size: break
+
+            emb = self.decoder.word_lut(Variable(inp))
+
+        samples = torch.stack(samples)
+        outputs = torch.stack(outputs)
         return samples, outputs
 
 

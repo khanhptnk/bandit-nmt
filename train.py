@@ -249,12 +249,12 @@ def main():
             critic, critic_optim = create_critic(checkpoint, dicts, opt)
             # Pretrain critic.
             if opt.critic_pretrain_epochs > 0:
-                reinforce_trainer = lib.ReinforceTrainer(model, critic, supervised_data, test_data,
+                reinforce_trainer = lib.OSDTrainer(model, critic, supervised_data, test_data,
                     metrics, dicts, optim, critic_optim, opt)
                 reinforce_trainer.train(opt.start_reinforce,
                     opt.start_reinforce + opt.critic_pretrain_epochs - 1, True, start_time)
             # Reinforce training.
-            reinforce_trainer = lib.ReinforceTrainer(model, critic, bandit_data, test_data,
+            reinforce_trainer = lib.OSDTrainer(model, critic, bandit_data, test_data,
                     metrics, dicts, optim, critic_optim, opt)
             reinforce_trainer.train(opt.start_reinforce + opt.critic_pretrain_epochs, opt.end_epoch,
                 False, start_time)
