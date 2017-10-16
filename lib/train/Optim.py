@@ -1,6 +1,6 @@
 import math
 import torch.optim as optim
-
+from .yellowfin import YFOptimizer
 
 class Optim(object):
     def _makeOptimizer(self):
@@ -12,6 +12,8 @@ class Optim(object):
             self.optimizer = optim.Adadelta(self.params, lr=self.lr)
         elif self.method == 'adam':
             self.optimizer = optim.Adam(self.params, lr=self.lr)
+        elif self.method == 'yellowfin':
+            self.optimizer = YFOptimizer(self.params, lr=self.lr) 
         else:
             raise RuntimeError("Invalid optim method: " + self.method)
 
