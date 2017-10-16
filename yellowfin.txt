@@ -1,0 +1,1023 @@
+Namespace(batch_size=64, brnn=False, brnn_merge='concat', critic_pretrain_epochs=0, data='data/en-de/processed_all-train.pt', dropout=0.1, end_epoch=20, eval=False, eval_sample=False, gpus=[3], input_feed=1, layers=2, learning_rate_decay=0.5, load_from=None, log_interval=100, lr=1.0, max_generator_batches=32, max_grad_norm=5, max_predict_length=50, no_update=False, optim='yellowfin', param_init=0.1, pert_func=None, pert_param=None, reinforce_lr=0.0001, rnn_size=500, save_dir='/fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp', seed=3435, start_decay_at=5, start_epoch=1, start_reinforce=None, sup_train_on_bandit=False, word_vec_size=500)
+Loading data from "data/en-de/processed_all-train.pt"
+ * vocabulary size. source = 50004; target = 50004
+ * number of XENT training sentences. 185714
+ * number of PG training sentences. 167077
+ * maximum batch size. 64
+Building model...
+* number of parameters: 84822004
+NMTModel (
+  (encoder): Encoder (
+    (word_lut): Embedding(50004, 500, padding_idx=0)
+    (rnn): LSTM(500, 500, num_layers=2, dropout=0.1)
+  )
+  (decoder): Decoder (
+    (word_lut): Embedding(50004, 500, padding_idx=0)
+    (rnn): StackedLSTM (
+      (dropout): Dropout (p = 0.1)
+      (layers): ModuleList (
+        (0): LSTMCell(1000, 500)
+        (1): LSTMCell(500, 500)
+      )
+    )
+    (attn): GlobalAttention (
+      (linear_in): Linear (500 -> 500)
+      (sm): Softmax ()
+      (linear_out): Linear (1000 -> 500)
+      (tanh): Tanh ()
+    )
+    (dropout): Dropout (p = 0.1)
+  )
+  (generator): MemEfficientGenerator (
+    (generator): Linear (500 -> 50004)
+  )
+)
+
+* XENT epoch *
+Model optim lr: 1
+Epoch   1,    100/2902 batches;
+                      perplexity:  5845.51;  2386 tokens/s; 0:00:52 elapsed
+Epoch   1,    200/2902 batches;
+                      perplexity:   762.00;  2307 tokens/s; 0:01:44 elapsed
+Epoch   1,    300/2902 batches;
+                      perplexity:   550.61;  2385 tokens/s; 0:02:36 elapsed
+Epoch   1,    400/2902 batches;
+                      perplexity:   474.99;  2436 tokens/s; 0:03:27 elapsed
+Epoch   1,    500/2902 batches;
+                      perplexity:   401.86;  2382 tokens/s; 0:04:18 elapsed
+Epoch   1,    600/2902 batches;
+                      perplexity:   360.93;  2324 tokens/s; 0:05:11 elapsed
+Epoch   1,    700/2902 batches;
+                      perplexity:   319.28;  2389 tokens/s; 0:06:02 elapsed
+Epoch   1,    800/2902 batches;
+                      perplexity:   283.87;  2387 tokens/s; 0:06:54 elapsed
+Epoch   1,    900/2902 batches;
+                      perplexity:   259.34;  2412 tokens/s; 0:07:45 elapsed
+Epoch   1,   1000/2902 batches;
+                      perplexity:   243.56;  2402 tokens/s; 0:08:36 elapsed
+Epoch   1,   1100/2902 batches;
+                      perplexity:   225.98;  2409 tokens/s; 0:09:27 elapsed
+Epoch   1,   1200/2902 batches;
+                      perplexity:   213.55;  2388 tokens/s; 0:10:19 elapsed
+Epoch   1,   1300/2902 batches;
+                      perplexity:   205.47;  2394 tokens/s; 0:11:10 elapsed
+Epoch   1,   1400/2902 batches;
+                      perplexity:   189.13;  2314 tokens/s; 0:12:04 elapsed
+Epoch   1,   1500/2902 batches;
+                      perplexity:   175.14;  2376 tokens/s; 0:12:55 elapsed
+Epoch   1,   1600/2902 batches;
+                      perplexity:   163.73;  2413 tokens/s; 0:13:45 elapsed
+Epoch   1,   1700/2902 batches;
+                      perplexity:   154.57;  2397 tokens/s; 0:14:37 elapsed
+Epoch   1,   1800/2902 batches;
+                      perplexity:   143.19;  2281 tokens/s; 0:15:30 elapsed
+Epoch   1,   1900/2902 batches;
+                      perplexity:   138.30;  2316 tokens/s; 0:16:23 elapsed
+Epoch   1,   2000/2902 batches;
+                      perplexity:   127.62;  2302 tokens/s; 0:17:17 elapsed
+Epoch   1,   2100/2902 batches;
+                      perplexity:   119.02;  2308 tokens/s; 0:18:09 elapsed
+Epoch   1,   2200/2902 batches;
+                      perplexity:   113.82;  2437 tokens/s; 0:19:00 elapsed
+Epoch   1,   2300/2902 batches;
+                      perplexity:   108.01;  2398 tokens/s; 0:19:52 elapsed
+Epoch   1,   2400/2902 batches;
+                      perplexity:   101.11;  2418 tokens/s; 0:20:42 elapsed
+Epoch   1,   2500/2902 batches;
+                      perplexity:    96.75;  2384 tokens/s; 0:21:33 elapsed
+Epoch   1,   2600/2902 batches;
+                      perplexity:    90.59;  2415 tokens/s; 0:22:24 elapsed
+Epoch   1,   2700/2902 batches;
+                      perplexity:    90.38;  2396 tokens/s; 0:23:16 elapsed
+Epoch   1,   2800/2902 batches;
+                      perplexity:    83.38;  2580 tokens/s; 0:24:04 elapsed
+Epoch   1,   2900/2902 batches;
+                      perplexity:    81.86;  2550 tokens/s; 0:24:52 elapsed
+Train perplexity: 207.94
+Validation perplexity: 75.76
+Validation sentence reward: 14.56
+Validation corpus reward: 4.39
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_1.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch   2,    100/2902 batches;
+                      perplexity:    74.99;  2272 tokens/s; 0:27:12 elapsed
+Epoch   2,    200/2902 batches;
+                      perplexity:    73.67;  2268 tokens/s; 0:28:06 elapsed
+Epoch   2,    300/2902 batches;
+                      perplexity:    70.46;  2265 tokens/s; 0:29:00 elapsed
+Epoch   2,    400/2902 batches;
+                      perplexity:    69.96;  2258 tokens/s; 0:29:55 elapsed
+Epoch   2,    500/2902 batches;
+                      perplexity:    67.10;  2274 tokens/s; 0:30:49 elapsed
+Epoch   2,    600/2902 batches;
+                      perplexity:    64.79;  2268 tokens/s; 0:31:43 elapsed
+Epoch   2,    700/2902 batches;
+                      perplexity:    61.29;  2286 tokens/s; 0:32:36 elapsed
+Epoch   2,    800/2902 batches;
+                      perplexity:    61.29;  2271 tokens/s; 0:33:30 elapsed
+Epoch   2,    900/2902 batches;
+                      perplexity:    59.59;  2380 tokens/s; 0:34:22 elapsed
+Epoch   2,   1000/2902 batches;
+                      perplexity:    57.23;  2372 tokens/s; 0:35:13 elapsed
+Epoch   2,   1100/2902 batches;
+                      perplexity:    54.85;  2388 tokens/s; 0:36:05 elapsed
+Epoch   2,   1200/2902 batches;
+                      perplexity:    54.56;  2372 tokens/s; 0:36:56 elapsed
+Epoch   2,   1300/2902 batches;
+                      perplexity:    52.47;  2438 tokens/s; 0:37:47 elapsed
+Epoch   2,   1400/2902 batches;
+                      perplexity:    52.18;  2379 tokens/s; 0:38:38 elapsed
+Epoch   2,   1500/2902 batches;
+                      perplexity:    49.39;  2415 tokens/s; 0:39:29 elapsed
+Epoch   2,   1600/2902 batches;
+                      perplexity:    48.04;  2380 tokens/s; 0:40:21 elapsed
+Epoch   2,   1700/2902 batches;
+                      perplexity:    47.51;  2435 tokens/s; 0:41:11 elapsed
+Epoch   2,   1800/2902 batches;
+                      perplexity:    46.09;  2433 tokens/s; 0:42:02 elapsed
+Epoch   2,   1900/2902 batches;
+                      perplexity:    45.97;  2422 tokens/s; 0:42:53 elapsed
+Epoch   2,   2000/2902 batches;
+                      perplexity:    43.98;  2436 tokens/s; 0:43:44 elapsed
+Epoch   2,   2100/2902 batches;
+                      perplexity:    42.23;  2437 tokens/s; 0:44:34 elapsed
+Epoch   2,   2200/2902 batches;
+                      perplexity:    41.70;  2440 tokens/s; 0:45:24 elapsed
+Epoch   2,   2300/2902 batches;
+                      perplexity:    42.15;  2436 tokens/s; 0:46:15 elapsed
+Epoch   2,   2400/2902 batches;
+                      perplexity:    40.91;  2401 tokens/s; 0:47:06 elapsed
+Epoch   2,   2500/2902 batches;
+                      perplexity:    39.70;  2565 tokens/s; 0:47:54 elapsed
+Epoch   2,   2600/2902 batches;
+                      perplexity:    38.91;  2821 tokens/s; 0:48:38 elapsed
+Epoch   2,   2700/2902 batches;
+                      perplexity:    37.21;  2913 tokens/s; 0:49:20 elapsed
+Epoch   2,   2800/2902 batches;
+                      perplexity:    37.90;  2395 tokens/s; 0:50:11 elapsed
+Epoch   2,   2900/2902 batches;
+                      perplexity:    36.40;  2447 tokens/s; 0:51:01 elapsed
+Train perplexity: 50.89
+Validation perplexity: 34.06
+Validation sentence reward: 20.45
+Validation corpus reward: 10.12
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_2.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch   3,    100/2902 batches;
+                      perplexity:    33.79;  2425 tokens/s; 0:53:17 elapsed
+Epoch   3,    200/2902 batches;
+                      perplexity:    32.23;  2415 tokens/s; 0:54:08 elapsed
+Epoch   3,    300/2902 batches;
+                      perplexity:    33.19;  2429 tokens/s; 0:54:59 elapsed
+Epoch   3,    400/2902 batches;
+                      perplexity:    31.68;  2433 tokens/s; 0:55:49 elapsed
+Epoch   3,    500/2902 batches;
+                      perplexity:    31.02;  2407 tokens/s; 0:56:40 elapsed
+Epoch   3,    600/2902 batches;
+                      perplexity:    31.24;  2431 tokens/s; 0:57:31 elapsed
+Epoch   3,    700/2902 batches;
+                      perplexity:    30.71;  2385 tokens/s; 0:58:22 elapsed
+Epoch   3,    800/2902 batches;
+                      perplexity:    30.87;  2430 tokens/s; 0:59:13 elapsed
+Epoch   3,    900/2902 batches;
+                      perplexity:    28.73;  2404 tokens/s; 1:00:03 elapsed
+Epoch   3,   1000/2902 batches;
+                      perplexity:    28.81;  2434 tokens/s; 1:00:54 elapsed
+Epoch   3,   1100/2902 batches;
+                      perplexity:    28.32;  2433 tokens/s; 1:01:44 elapsed
+Epoch   3,   1200/2902 batches;
+                      perplexity:    28.88;  2445 tokens/s; 1:02:35 elapsed
+Epoch   3,   1300/2902 batches;
+                      perplexity:    27.95;  2399 tokens/s; 1:03:26 elapsed
+Epoch   3,   1400/2902 batches;
+                      perplexity:    28.09;  2421 tokens/s; 1:04:17 elapsed
+Epoch   3,   1500/2902 batches;
+                      perplexity:    28.28;  2422 tokens/s; 1:05:08 elapsed
+Epoch   3,   1600/2902 batches;
+                      perplexity:    26.96;  2449 tokens/s; 1:05:58 elapsed
+Epoch   3,   1700/2902 batches;
+                      perplexity:    26.83;  2405 tokens/s; 1:06:49 elapsed
+Epoch   3,   1800/2902 batches;
+                      perplexity:    26.73;  2434 tokens/s; 1:07:39 elapsed
+Epoch   3,   1900/2902 batches;
+                      perplexity:    25.57;  2430 tokens/s; 1:08:30 elapsed
+Epoch   3,   2000/2902 batches;
+                      perplexity:    25.99;  2478 tokens/s; 1:09:19 elapsed
+Epoch   3,   2100/2902 batches;
+                      perplexity:    25.74;  2472 tokens/s; 1:10:08 elapsed
+Epoch   3,   2200/2902 batches;
+                      perplexity:    25.21;  2465 tokens/s; 1:10:58 elapsed
+Epoch   3,   2300/2902 batches;
+                      perplexity:    25.15;  2466 tokens/s; 1:11:48 elapsed
+Epoch   3,   2400/2902 batches;
+                      perplexity:    24.36;  2556 tokens/s; 1:12:36 elapsed
+Epoch   3,   2500/2902 batches;
+                      perplexity:    23.79;  2813 tokens/s; 1:13:20 elapsed
+Epoch   3,   2600/2902 batches;
+                      perplexity:    24.03;  3100 tokens/s; 1:14:00 elapsed
+Epoch   3,   2700/2902 batches;
+                      perplexity:    23.41;  2482 tokens/s; 1:14:49 elapsed
+Epoch   3,   2800/2902 batches;
+                      perplexity:    23.16;  2472 tokens/s; 1:15:39 elapsed
+Epoch   3,   2900/2902 batches;
+                      perplexity:    23.61;  2446 tokens/s; 1:16:28 elapsed
+Train perplexity: 27.57
+Validation perplexity: 21.65
+Validation sentence reward: 26.08
+Validation corpus reward: 16.39
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_3.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch   4,    100/2902 batches;
+                      perplexity:    20.41;  2460 tokens/s; 1:18:41 elapsed
+Epoch   4,    200/2902 batches;
+                      perplexity:    20.20;  2467 tokens/s; 1:19:31 elapsed
+Epoch   4,    300/2902 batches;
+                      perplexity:    20.14;  2422 tokens/s; 1:20:21 elapsed
+Epoch   4,    400/2902 batches;
+                      perplexity:    20.63;  2463 tokens/s; 1:21:12 elapsed
+Epoch   4,    500/2902 batches;
+                      perplexity:    20.05;  2426 tokens/s; 1:22:02 elapsed
+Epoch   4,    600/2902 batches;
+                      perplexity:    20.20;  2482 tokens/s; 1:22:53 elapsed
+Epoch   4,    700/2902 batches;
+                      perplexity:    20.12;  2437 tokens/s; 1:23:43 elapsed
+Epoch   4,    800/2902 batches;
+                      perplexity:    19.85;  2419 tokens/s; 1:24:33 elapsed
+Epoch   4,    900/2902 batches;
+                      perplexity:    19.59;  2413 tokens/s; 1:25:24 elapsed
+Epoch   4,   1000/2902 batches;
+                      perplexity:    19.97;  2425 tokens/s; 1:26:15 elapsed
+Epoch   4,   1100/2902 batches;
+                      perplexity:    19.29;  2434 tokens/s; 1:27:05 elapsed
+Epoch   4,   1200/2902 batches;
+                      perplexity:    19.50;  2476 tokens/s; 1:27:55 elapsed
+Epoch   4,   1300/2902 batches;
+                      perplexity:    19.01;  2423 tokens/s; 1:28:46 elapsed
+Epoch   4,   1400/2902 batches;
+                      perplexity:    18.96;  2426 tokens/s; 1:29:36 elapsed
+Epoch   4,   1500/2902 batches;
+                      perplexity:    18.45;  2434 tokens/s; 1:30:27 elapsed
+Epoch   4,   1600/2902 batches;
+                      perplexity:    20.04;  2442 tokens/s; 1:31:17 elapsed
+Epoch   4,   1700/2902 batches;
+                      perplexity:    19.61;  2413 tokens/s; 1:32:08 elapsed
+Epoch   4,   1800/2902 batches;
+                      perplexity:    19.08;  2431 tokens/s; 1:32:58 elapsed
+Epoch   4,   1900/2902 batches;
+                      perplexity:    19.35;  2391 tokens/s; 1:33:49 elapsed
+Epoch   4,   2000/2902 batches;
+                      perplexity:    18.77;  2406 tokens/s; 1:34:41 elapsed
+Epoch   4,   2100/2902 batches;
+                      perplexity:    18.29;  2430 tokens/s; 1:35:31 elapsed
+Epoch   4,   2200/2902 batches;
+                      perplexity:    18.48;  2419 tokens/s; 1:36:22 elapsed
+Epoch   4,   2300/2902 batches;
+                      perplexity:    17.85;  2401 tokens/s; 1:37:13 elapsed
+Epoch   4,   2400/2902 batches;
+                      perplexity:    17.59;  2563 tokens/s; 1:38:00 elapsed
+Epoch   4,   2500/2902 batches;
+                      perplexity:    17.45;  2916 tokens/s; 1:38:43 elapsed
+Epoch   4,   2600/2902 batches;
+                      perplexity:    18.05;  2697 tokens/s; 1:39:28 elapsed
+Epoch   4,   2700/2902 batches;
+                      perplexity:    17.29;  2402 tokens/s; 1:40:19 elapsed
+Epoch   4,   2800/2902 batches;
+                      perplexity:    17.34;  2406 tokens/s; 1:41:10 elapsed
+Epoch   4,   2900/2902 batches;
+                      perplexity:    17.13;  2410 tokens/s; 1:42:01 elapsed
+Train perplexity: 19.03
+Validation perplexity: 16.98
+Validation sentence reward: 29.67
+Validation corpus reward: 21.62
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_4.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch   5,    100/2902 batches;
+                      perplexity:    15.28;  2498 tokens/s; 1:44:11 elapsed
+Epoch   5,    200/2902 batches;
+                      perplexity:    15.09;  2447 tokens/s; 1:45:01 elapsed
+Epoch   5,    300/2902 batches;
+                      perplexity:    14.86;  2446 tokens/s; 1:45:52 elapsed
+Epoch   5,    400/2902 batches;
+                      perplexity:    15.19;  2465 tokens/s; 1:46:42 elapsed
+Epoch   5,    500/2902 batches;
+                      perplexity:    14.84;  2495 tokens/s; 1:47:31 elapsed
+Epoch   5,    600/2902 batches;
+                      perplexity:    14.96;  2498 tokens/s; 1:48:20 elapsed
+Epoch   5,    700/2902 batches;
+                      perplexity:    14.80;  2483 tokens/s; 1:49:10 elapsed
+Epoch   5,    800/2902 batches;
+                      perplexity:    14.87;  2497 tokens/s; 1:49:59 elapsed
+Epoch   5,    900/2902 batches;
+                      perplexity:    14.54;  2491 tokens/s; 1:50:49 elapsed
+Epoch   5,   1000/2902 batches;
+                      perplexity:    14.84;  2468 tokens/s; 1:51:38 elapsed
+Epoch   5,   1100/2902 batches;
+                      perplexity:    14.61;  2456 tokens/s; 1:52:28 elapsed
+Epoch   5,   1200/2902 batches;
+                      perplexity:    14.88;  2472 tokens/s; 1:53:17 elapsed
+Epoch   5,   1300/2902 batches;
+                      perplexity:    14.64;  2469 tokens/s; 1:54:07 elapsed
+Epoch   5,   1400/2902 batches;
+                      perplexity:    14.86;  2446 tokens/s; 1:54:57 elapsed
+Epoch   5,   1500/2902 batches;
+                      perplexity:    14.37;  2453 tokens/s; 1:55:47 elapsed
+Epoch   5,   1600/2902 batches;
+                      perplexity:    14.60;  2455 tokens/s; 1:56:36 elapsed
+Epoch   5,   1700/2902 batches;
+                      perplexity:    15.11;  2485 tokens/s; 1:57:26 elapsed
+Epoch   5,   1800/2902 batches;
+                      perplexity:    14.08;  2440 tokens/s; 1:58:16 elapsed
+Epoch   5,   1900/2902 batches;
+                      perplexity:    14.18;  2407 tokens/s; 1:59:07 elapsed
+Epoch   5,   2000/2902 batches;
+                      perplexity:    14.23;  2413 tokens/s; 1:59:58 elapsed
+Epoch   5,   2100/2902 batches;
+                      perplexity:    14.41;  2453 tokens/s; 2:00:49 elapsed
+Epoch   5,   2200/2902 batches;
+                      perplexity:    13.95;  2374 tokens/s; 2:01:40 elapsed
+Epoch   5,   2300/2902 batches;
+                      perplexity:    14.02;  2388 tokens/s; 2:02:31 elapsed
+Epoch   5,   2400/2902 batches;
+                      perplexity:    13.97;  2583 tokens/s; 2:03:19 elapsed
+Epoch   5,   2500/2902 batches;
+                      perplexity:    14.25;  2729 tokens/s; 2:04:03 elapsed
+Epoch   5,   2600/2902 batches;
+                      perplexity:    14.26;  2384 tokens/s; 2:04:55 elapsed
+Epoch   5,   2700/2902 batches;
+                      perplexity:    13.74;  2376 tokens/s; 2:05:47 elapsed
+Epoch   5,   2800/2902 batches;
+                      perplexity:    14.07;  2389 tokens/s; 2:06:39 elapsed
+Epoch   5,   2900/2902 batches;
+                      perplexity:    13.62;  2367 tokens/s; 2:07:31 elapsed
+Train perplexity: 14.51
+Validation perplexity: 14.17
+Validation sentence reward: 31.18
+Validation corpus reward: 22.44
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_5.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch   6,    100/2902 batches;
+                      perplexity:    11.79;  2333 tokens/s; 2:09:47 elapsed
+Epoch   6,    200/2902 batches;
+                      perplexity:    12.05;  2379 tokens/s; 2:10:38 elapsed
+Epoch   6,    300/2902 batches;
+                      perplexity:    11.85;  2344 tokens/s; 2:11:30 elapsed
+Epoch   6,    400/2902 batches;
+                      perplexity:    12.17;  2374 tokens/s; 2:12:22 elapsed
+Epoch   6,    500/2902 batches;
+                      perplexity:    12.22;  2321 tokens/s; 2:13:14 elapsed
+Epoch   6,    600/2902 batches;
+                      perplexity:    11.97;  2317 tokens/s; 2:14:07 elapsed
+Epoch   6,    700/2902 batches;
+                      perplexity:    12.19;  2346 tokens/s; 2:15:00 elapsed
+Epoch   6,    800/2902 batches;
+                      perplexity:    12.05;  2432 tokens/s; 2:15:51 elapsed
+Epoch   6,    900/2902 batches;
+                      perplexity:    11.69;  2392 tokens/s; 2:16:42 elapsed
+Epoch   6,   1000/2902 batches;
+                      perplexity:    12.02;  2395 tokens/s; 2:17:32 elapsed
+Epoch   6,   1100/2902 batches;
+                      perplexity:    12.10;  2428 tokens/s; 2:18:23 elapsed
+Epoch   6,   1200/2902 batches;
+                      perplexity:    12.00;  2424 tokens/s; 2:19:14 elapsed
+Epoch   6,   1300/2902 batches;
+                      perplexity:    12.00;  2428 tokens/s; 2:20:05 elapsed
+Epoch   6,   1400/2902 batches;
+                      perplexity:    12.04;  2397 tokens/s; 2:20:56 elapsed
+Epoch   6,   1500/2902 batches;
+                      perplexity:    12.03;  2421 tokens/s; 2:21:47 elapsed
+Epoch   6,   1600/2902 batches;
+                      perplexity:    12.09;  2359 tokens/s; 2:22:38 elapsed
+Epoch   6,   1700/2902 batches;
+                      perplexity:    11.77;  2379 tokens/s; 2:23:30 elapsed
+Epoch   6,   1800/2902 batches;
+                      perplexity:    11.95;  2477 tokens/s; 2:24:20 elapsed
+Epoch   6,   1900/2902 batches;
+                      perplexity:    12.09;  2435 tokens/s; 2:25:11 elapsed
+Epoch   6,   2000/2902 batches;
+                      perplexity:    12.04;  2445 tokens/s; 2:26:01 elapsed
+Epoch   6,   2100/2902 batches;
+                      perplexity:    11.89;  2457 tokens/s; 2:26:51 elapsed
+Epoch   6,   2200/2902 batches;
+                      perplexity:    11.96;  2729 tokens/s; 2:27:36 elapsed
+Epoch   6,   2300/2902 batches;
+                      perplexity:    11.97;  3007 tokens/s; 2:28:17 elapsed
+Epoch   6,   2400/2902 batches;
+                      perplexity:    11.88;  2441 tokens/s; 2:29:08 elapsed
+Epoch   6,   2500/2902 batches;
+                      perplexity:    11.76;  2405 tokens/s; 2:29:58 elapsed
+Epoch   6,   2600/2902 batches;
+                      perplexity:    11.81;  2445 tokens/s; 2:30:49 elapsed
+Epoch   6,   2700/2902 batches;
+                      perplexity:    11.51;  2412 tokens/s; 2:31:40 elapsed
+Epoch   6,   2800/2902 batches;
+                      perplexity:    11.72;  2403 tokens/s; 2:32:30 elapsed
+Epoch   6,   2900/2902 batches;
+                      perplexity:    11.53;  2400 tokens/s; 2:33:22 elapsed
+Train perplexity: 11.93
+Validation perplexity: 12.58
+Validation sentence reward: 33.29
+Validation corpus reward: 25.01
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_6.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch   7,    100/2902 batches;
+                      perplexity:    10.13;  2443 tokens/s; 2:35:33 elapsed
+Epoch   7,    200/2902 batches;
+                      perplexity:    10.17;  2426 tokens/s; 2:36:24 elapsed
+Epoch   7,    300/2902 batches;
+                      perplexity:    10.10;  2429 tokens/s; 2:37:15 elapsed
+Epoch   7,    400/2902 batches;
+                      perplexity:    10.23;  2381 tokens/s; 2:38:06 elapsed
+Epoch   7,    500/2902 batches;
+                      perplexity:    10.19;  2420 tokens/s; 2:38:57 elapsed
+Epoch   7,    600/2902 batches;
+                      perplexity:    10.19;  2393 tokens/s; 2:39:48 elapsed
+Epoch   7,    700/2902 batches;
+                      perplexity:    10.26;  2391 tokens/s; 2:40:40 elapsed
+Epoch   7,    800/2902 batches;
+                      perplexity:    10.24;  2305 tokens/s; 2:41:33 elapsed
+Epoch   7,    900/2902 batches;
+                      perplexity:    10.47;  2343 tokens/s; 2:42:25 elapsed
+Epoch   7,   1000/2902 batches;
+                      perplexity:    10.50;  2333 tokens/s; 2:43:17 elapsed
+Epoch   7,   1100/2902 batches;
+                      perplexity:    10.16;  2401 tokens/s; 2:44:07 elapsed
+Epoch   7,   1200/2902 batches;
+                      perplexity:    10.17;  2456 tokens/s; 2:44:58 elapsed
+Epoch   7,   1300/2902 batches;
+                      perplexity:    10.32;  2419 tokens/s; 2:45:49 elapsed
+Epoch   7,   1400/2902 batches;
+                      perplexity:    10.12;  2421 tokens/s; 2:46:39 elapsed
+Epoch   7,   1500/2902 batches;
+                      perplexity:    10.12;  2419 tokens/s; 2:47:30 elapsed
+Epoch   7,   1600/2902 batches;
+                      perplexity:    10.20;  2394 tokens/s; 2:48:21 elapsed
+Epoch   7,   1700/2902 batches;
+                      perplexity:    10.05;  2437 tokens/s; 2:49:12 elapsed
+Epoch   7,   1800/2902 batches;
+                      perplexity:    10.42;  2441 tokens/s; 2:50:02 elapsed
+Epoch   7,   1900/2902 batches;
+                      perplexity:    10.37;  2402 tokens/s; 2:50:54 elapsed
+Epoch   7,   2000/2902 batches;
+                      perplexity:    10.43;  2521 tokens/s; 2:51:43 elapsed
+Epoch   7,   2100/2902 batches;
+                      perplexity:    10.06;  2790 tokens/s; 2:52:27 elapsed
+Epoch   7,   2200/2902 batches;
+                      perplexity:    10.07;  2927 tokens/s; 2:53:09 elapsed
+Epoch   7,   2300/2902 batches;
+                      perplexity:    10.41;  2416 tokens/s; 2:53:59 elapsed
+Epoch   7,   2400/2902 batches;
+                      perplexity:    10.04;  2410 tokens/s; 2:54:50 elapsed
+Epoch   7,   2500/2902 batches;
+                      perplexity:    10.03;  2429 tokens/s; 2:55:41 elapsed
+Epoch   7,   2600/2902 batches;
+                      perplexity:    10.35;  2414 tokens/s; 2:56:32 elapsed
+Epoch   7,   2700/2902 batches;
+                      perplexity:    10.17;  2406 tokens/s; 2:57:23 elapsed
+Epoch   7,   2800/2902 batches;
+                      perplexity:    10.07;  2414 tokens/s; 2:58:14 elapsed
+Epoch   7,   2900/2902 batches;
+                      perplexity:    10.11;  2407 tokens/s; 2:59:04 elapsed
+Train perplexity: 10.21
+Validation perplexity: 11.70
+Validation sentence reward: 34.40
+Validation corpus reward: 26.10
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_7.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch   8,    100/2902 batches;
+                      perplexity:     8.72;  2403 tokens/s; 3:01:16 elapsed
+Epoch   8,    200/2902 batches;
+                      perplexity:     8.68;  2441 tokens/s; 3:02:07 elapsed
+Epoch   8,    300/2902 batches;
+                      perplexity:     8.78;  2422 tokens/s; 3:02:58 elapsed
+Epoch   8,    400/2902 batches;
+                      perplexity:     8.87;  2445 tokens/s; 3:03:48 elapsed
+Epoch   8,    500/2902 batches;
+                      perplexity:     8.95;  2424 tokens/s; 3:04:39 elapsed
+Epoch   8,    600/2902 batches;
+                      perplexity:     8.96;  2453 tokens/s; 3:05:29 elapsed
+Epoch   8,    700/2902 batches;
+                      perplexity:     9.14;  2386 tokens/s; 3:06:20 elapsed
+Epoch   8,    800/2902 batches;
+                      perplexity:     9.12;  2412 tokens/s; 3:07:11 elapsed
+Epoch   8,    900/2902 batches;
+                      perplexity:     9.38;  2421 tokens/s; 3:08:02 elapsed
+Epoch   8,   1000/2902 batches;
+                      perplexity:     8.94;  2430 tokens/s; 3:08:53 elapsed
+Epoch   8,   1100/2902 batches;
+                      perplexity:     8.83;  2430 tokens/s; 3:09:43 elapsed
+Epoch   8,   1200/2902 batches;
+                      perplexity:     8.73;  2407 tokens/s; 3:10:34 elapsed
+Epoch   8,   1300/2902 batches;
+                      perplexity:     8.92;  2414 tokens/s; 3:11:25 elapsed
+Epoch   8,   1400/2902 batches;
+                      perplexity:     9.07;  2422 tokens/s; 3:12:16 elapsed
+Epoch   8,   1500/2902 batches;
+                      perplexity:     8.81;  2404 tokens/s; 3:13:07 elapsed
+Epoch   8,   1600/2902 batches;
+                      perplexity:     8.96;  2449 tokens/s; 3:13:57 elapsed
+Epoch   8,   1700/2902 batches;
+                      perplexity:     9.16;  2412 tokens/s; 3:14:48 elapsed
+Epoch   8,   1800/2902 batches;
+                      perplexity:     8.88;  2415 tokens/s; 3:15:38 elapsed
+Epoch   8,   1900/2902 batches;
+                      perplexity:     9.09;  2401 tokens/s; 3:16:29 elapsed
+Epoch   8,   2000/2902 batches;
+                      perplexity:     9.07;  2794 tokens/s; 3:17:13 elapsed
+Epoch   8,   2100/2902 batches;
+                      perplexity:     9.07;  3092 tokens/s; 3:17:53 elapsed
+Epoch   8,   2200/2902 batches;
+                      perplexity:     9.13;  2462 tokens/s; 3:18:43 elapsed
+Epoch   8,   2300/2902 batches;
+                      perplexity:     9.27;  2436 tokens/s; 3:19:34 elapsed
+Epoch   8,   2400/2902 batches;
+                      perplexity:     9.29;  2444 tokens/s; 3:20:24 elapsed
+Epoch   8,   2500/2902 batches;
+                      perplexity:     9.16;  2394 tokens/s; 3:21:15 elapsed
+Epoch   8,   2600/2902 batches;
+                      perplexity:     9.30;  2438 tokens/s; 3:22:05 elapsed
+Epoch   8,   2700/2902 batches;
+                      perplexity:     9.00;  2408 tokens/s; 3:22:56 elapsed
+Epoch   8,   2800/2902 batches;
+                      perplexity:     9.10;  2439 tokens/s; 3:23:46 elapsed
+Epoch   8,   2900/2902 batches;
+                      perplexity:     9.12;  2420 tokens/s; 3:24:37 elapsed
+Train perplexity: 9.02
+Validation perplexity: 10.85
+Validation sentence reward: 34.86
+Validation corpus reward: 26.98
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_8.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch   9,    100/2902 batches;
+                      perplexity:     7.69;  2460 tokens/s; 3:26:49 elapsed
+Epoch   9,    200/2902 batches;
+                      perplexity:     7.69;  2424 tokens/s; 3:27:40 elapsed
+Epoch   9,    300/2902 batches;
+                      perplexity:     7.81;  2460 tokens/s; 3:28:30 elapsed
+Epoch   9,    400/2902 batches;
+                      perplexity:     7.88;  2420 tokens/s; 3:29:20 elapsed
+Epoch   9,    500/2902 batches;
+                      perplexity:     7.91;  2415 tokens/s; 3:30:11 elapsed
+Epoch   9,    600/2902 batches;
+                      perplexity:     7.99;  2443 tokens/s; 3:31:01 elapsed
+Epoch   9,    700/2902 batches;
+                      perplexity:     8.13;  2448 tokens/s; 3:31:51 elapsed
+Epoch   9,    800/2902 batches;
+                      perplexity:     7.79;  2417 tokens/s; 3:32:41 elapsed
+Epoch   9,    900/2902 batches;
+                      perplexity:     8.11;  2415 tokens/s; 3:33:32 elapsed
+Epoch   9,   1000/2902 batches;
+                      perplexity:     8.16;  2409 tokens/s; 3:34:23 elapsed
+Epoch   9,   1100/2902 batches;
+                      perplexity:     8.21;  2447 tokens/s; 3:35:14 elapsed
+Epoch   9,   1200/2902 batches;
+                      perplexity:     7.96;  2433 tokens/s; 3:36:05 elapsed
+Epoch   9,   1300/2902 batches;
+                      perplexity:     8.13;  2431 tokens/s; 3:36:55 elapsed
+Epoch   9,   1400/2902 batches;
+                      perplexity:     8.28;  2412 tokens/s; 3:37:46 elapsed
+Epoch   9,   1500/2902 batches;
+                      perplexity:     8.18;  2441 tokens/s; 3:38:37 elapsed
+Epoch   9,   1600/2902 batches;
+                      perplexity:     8.14;  2414 tokens/s; 3:39:28 elapsed
+Epoch   9,   1700/2902 batches;
+                      perplexity:     8.16;  2444 tokens/s; 3:40:18 elapsed
+Epoch   9,   1800/2902 batches;
+                      perplexity:     8.28;  2408 tokens/s; 3:41:09 elapsed
+Epoch   9,   1900/2902 batches;
+                      perplexity:     8.28;  2539 tokens/s; 3:41:56 elapsed
+Epoch   9,   2000/2902 batches;
+                      perplexity:     8.22;  2736 tokens/s; 3:42:41 elapsed
+Epoch   9,   2100/2902 batches;
+                      perplexity:     8.12;  2935 tokens/s; 3:43:23 elapsed
+Epoch   9,   2200/2902 batches;
+                      perplexity:     8.48;  2453 tokens/s; 3:44:13 elapsed
+Epoch   9,   2300/2902 batches;
+                      perplexity:     8.25;  2463 tokens/s; 3:45:04 elapsed
+Epoch   9,   2400/2902 batches;
+                      perplexity:     8.36;  2444 tokens/s; 3:45:54 elapsed
+Epoch   9,   2500/2902 batches;
+                      perplexity:     8.35;  2430 tokens/s; 3:46:45 elapsed
+Epoch   9,   2600/2902 batches;
+                      perplexity:     8.13;  2397 tokens/s; 3:47:36 elapsed
+Epoch   9,   2700/2902 batches;
+                      perplexity:     8.33;  2409 tokens/s; 3:48:27 elapsed
+Epoch   9,   2800/2902 batches;
+                      perplexity:     8.31;  2404 tokens/s; 3:49:17 elapsed
+Epoch   9,   2900/2902 batches;
+                      perplexity:     8.16;  2424 tokens/s; 3:50:08 elapsed
+Train perplexity: 8.12
+Validation perplexity: 10.54
+Validation sentence reward: 35.20
+Validation corpus reward: 27.60
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_9.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch  10,    100/2902 batches;
+                      perplexity:     6.93;  2411 tokens/s; 3:52:19 elapsed
+Epoch  10,    200/2902 batches;
+                      perplexity:     7.04;  2402 tokens/s; 3:53:09 elapsed
+Epoch  10,    300/2902 batches;
+                      perplexity:     7.28;  2447 tokens/s; 3:54:00 elapsed
+Epoch  10,    400/2902 batches;
+                      perplexity:     7.27;  2394 tokens/s; 3:54:51 elapsed
+Epoch  10,    500/2902 batches;
+                      perplexity:     7.29;  2447 tokens/s; 3:55:41 elapsed
+Epoch  10,    600/2902 batches;
+                      perplexity:     7.34;  2445 tokens/s; 3:56:32 elapsed
+Epoch  10,    700/2902 batches;
+                      perplexity:     7.35;  2420 tokens/s; 3:57:23 elapsed
+Epoch  10,    800/2902 batches;
+                      perplexity:     7.31;  2385 tokens/s; 3:58:14 elapsed
+Epoch  10,    900/2902 batches;
+                      perplexity:     7.28;  2446 tokens/s; 3:59:05 elapsed
+Epoch  10,   1000/2902 batches;
+                      perplexity:     7.15;  2387 tokens/s; 3:59:55 elapsed
+Epoch  10,   1100/2902 batches;
+                      perplexity:     7.41;  2411 tokens/s; 4:00:46 elapsed
+Epoch  10,   1200/2902 batches;
+                      perplexity:     7.38;  2413 tokens/s; 4:01:37 elapsed
+Epoch  10,   1300/2902 batches;
+                      perplexity:     7.55;  2439 tokens/s; 4:02:28 elapsed
+Epoch  10,   1400/2902 batches;
+                      perplexity:     7.57;  2414 tokens/s; 4:03:19 elapsed
+Epoch  10,   1500/2902 batches;
+                      perplexity:     7.44;  2444 tokens/s; 4:04:10 elapsed
+Epoch  10,   1600/2902 batches;
+                      perplexity:     7.45;  2402 tokens/s; 4:05:01 elapsed
+Epoch  10,   1700/2902 batches;
+                      perplexity:     7.68;  2428 tokens/s; 4:05:51 elapsed
+Epoch  10,   1800/2902 batches;
+                      perplexity:     7.53;  2413 tokens/s; 4:06:42 elapsed
+Epoch  10,   1900/2902 batches;
+                      perplexity:     7.58;  2844 tokens/s; 4:07:26 elapsed
+Epoch  10,   2000/2902 batches;
+                      perplexity:     7.57;  3094 tokens/s; 4:08:05 elapsed
+Epoch  10,   2100/2902 batches;
+                      perplexity:     7.52;  2447 tokens/s; 4:08:56 elapsed
+Epoch  10,   2200/2902 batches;
+                      perplexity:     7.54;  2404 tokens/s; 4:09:47 elapsed
+Epoch  10,   2300/2902 batches;
+                      perplexity:     7.53;  2421 tokens/s; 4:10:38 elapsed
+Epoch  10,   2400/2902 batches;
+                      perplexity:     7.54;  2426 tokens/s; 4:11:28 elapsed
+Epoch  10,   2500/2902 batches;
+                      perplexity:     7.46;  2434 tokens/s; 4:12:19 elapsed
+Epoch  10,   2600/2902 batches;
+                      perplexity:     7.45;  2363 tokens/s; 4:13:09 elapsed
+Epoch  10,   2700/2902 batches;
+                      perplexity:     7.44;  2412 tokens/s; 4:14:00 elapsed
+Epoch  10,   2800/2902 batches;
+                      perplexity:     7.59;  2398 tokens/s; 4:14:52 elapsed
+Epoch  10,   2900/2902 batches;
+                      perplexity:     7.69;  2308 tokens/s; 4:15:45 elapsed
+Train perplexity: 7.42
+Validation perplexity: 10.35
+Validation sentence reward: 35.68
+Validation corpus reward: 27.75
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_10.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch  11,    100/2902 batches;
+                      perplexity:     6.65;  2400 tokens/s; 4:17:59 elapsed
+Epoch  11,    200/2902 batches;
+                      perplexity:     6.46;  2357 tokens/s; 4:18:51 elapsed
+Epoch  11,    300/2902 batches;
+                      perplexity:     6.72;  2378 tokens/s; 4:19:42 elapsed
+Epoch  11,    400/2902 batches;
+                      perplexity:     6.70;  2424 tokens/s; 4:20:33 elapsed
+Epoch  11,    500/2902 batches;
+                      perplexity:     6.54;  2399 tokens/s; 4:21:23 elapsed
+Epoch  11,    600/2902 batches;
+                      perplexity:     6.62;  2398 tokens/s; 4:22:14 elapsed
+Epoch  11,    700/2902 batches;
+                      perplexity:     6.70;  2404 tokens/s; 4:23:05 elapsed
+Epoch  11,    800/2902 batches;
+                      perplexity:     6.77;  2436 tokens/s; 4:23:56 elapsed
+Epoch  11,    900/2902 batches;
+                      perplexity:     6.89;  2430 tokens/s; 4:24:46 elapsed
+Epoch  11,   1000/2902 batches;
+                      perplexity:     6.80;  2421 tokens/s; 4:25:37 elapsed
+Epoch  11,   1100/2902 batches;
+                      perplexity:     6.93;  2433 tokens/s; 4:26:27 elapsed
+Epoch  11,   1200/2902 batches;
+                      perplexity:     6.94;  2435 tokens/s; 4:27:18 elapsed
+Epoch  11,   1300/2902 batches;
+                      perplexity:     6.86;  2440 tokens/s; 4:28:08 elapsed
+Epoch  11,   1400/2902 batches;
+                      perplexity:     6.84;  2426 tokens/s; 4:28:59 elapsed
+Epoch  11,   1500/2902 batches;
+                      perplexity:     6.95;  2437 tokens/s; 4:29:50 elapsed
+Epoch  11,   1600/2902 batches;
+                      perplexity:     6.98;  2436 tokens/s; 4:30:40 elapsed
+Epoch  11,   1700/2902 batches;
+                      perplexity:     6.98;  2375 tokens/s; 4:31:32 elapsed
+Epoch  11,   1800/2902 batches;
+                      perplexity:     6.92;  2538 tokens/s; 4:32:21 elapsed
+Epoch  11,   1900/2902 batches;
+                      perplexity:     6.96;  2819 tokens/s; 4:33:04 elapsed
+Epoch  11,   2000/2902 batches;
+                      perplexity:     6.98;  2379 tokens/s; 4:33:55 elapsed
+Epoch  11,   2100/2902 batches;
+                      perplexity:     7.04;  2403 tokens/s; 4:34:47 elapsed
+Epoch  11,   2200/2902 batches;
+                      perplexity:     6.86;  2437 tokens/s; 4:35:37 elapsed
+Epoch  11,   2300/2902 batches;
+                      perplexity:     7.06;  2402 tokens/s; 4:36:29 elapsed
+Epoch  11,   2400/2902 batches;
+                      perplexity:     7.06;  2388 tokens/s; 4:37:20 elapsed
+Epoch  11,   2500/2902 batches;
+                      perplexity:     7.00;  2404 tokens/s; 4:38:11 elapsed
+Epoch  11,   2600/2902 batches;
+                      perplexity:     7.08;  2373 tokens/s; 4:39:03 elapsed
+Epoch  11,   2700/2902 batches;
+                      perplexity:     6.97;  2387 tokens/s; 4:39:54 elapsed
+Epoch  11,   2800/2902 batches;
+                      perplexity:     6.97;  2370 tokens/s; 4:40:46 elapsed
+Epoch  11,   2900/2902 batches;
+                      perplexity:     6.94;  2408 tokens/s; 4:41:37 elapsed
+Train perplexity: 6.87
+Validation perplexity: 10.18
+Validation sentence reward: 35.73
+Validation corpus reward: 28.27
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_11.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch  12,    100/2902 batches;
+                      perplexity:     6.06;  2389 tokens/s; 4:43:51 elapsed
+Epoch  12,    200/2902 batches;
+                      perplexity:     6.00;  2384 tokens/s; 4:44:42 elapsed
+Epoch  12,    300/2902 batches;
+                      perplexity:     6.14;  2392 tokens/s; 4:45:34 elapsed
+Epoch  12,    400/2902 batches;
+                      perplexity:     6.19;  2437 tokens/s; 4:46:25 elapsed
+Epoch  12,    500/2902 batches;
+                      perplexity:     6.14;  2385 tokens/s; 4:47:17 elapsed
+Epoch  12,    600/2902 batches;
+                      perplexity:     6.23;  2415 tokens/s; 4:48:07 elapsed
+Epoch  12,    700/2902 batches;
+                      perplexity:     6.10;  2402 tokens/s; 4:48:59 elapsed
+Epoch  12,    800/2902 batches;
+                      perplexity:     6.21;  2410 tokens/s; 4:49:50 elapsed
+Epoch  12,    900/2902 batches;
+                      perplexity:     6.35;  2422 tokens/s; 4:50:40 elapsed
+Epoch  12,   1000/2902 batches;
+                      perplexity:     6.32;  2467 tokens/s; 4:51:31 elapsed
+Epoch  12,   1100/2902 batches;
+                      perplexity:     6.35;  2402 tokens/s; 4:52:22 elapsed
+Epoch  12,   1200/2902 batches;
+                      perplexity:     6.39;  2387 tokens/s; 4:53:13 elapsed
+Epoch  12,   1300/2902 batches;
+                      perplexity:     6.32;  2414 tokens/s; 4:54:04 elapsed
+Epoch  12,   1400/2902 batches;
+                      perplexity:     6.24;  2402 tokens/s; 4:54:54 elapsed
+Epoch  12,   1500/2902 batches;
+                      perplexity:     6.33;  2420 tokens/s; 4:55:45 elapsed
+Epoch  12,   1600/2902 batches;
+                      perplexity:     6.40;  2436 tokens/s; 4:56:36 elapsed
+Epoch  12,   1700/2902 batches;
+                      perplexity:     6.41;  2778 tokens/s; 4:57:20 elapsed
+Epoch  12,   1800/2902 batches;
+                      perplexity:     6.43;  3214 tokens/s; 4:57:59 elapsed
+Epoch  12,   1900/2902 batches;
+                      perplexity:     6.40;  2456 tokens/s; 4:58:48 elapsed
+Epoch  12,   2000/2902 batches;
+                      perplexity:     6.65;  2409 tokens/s; 4:59:39 elapsed
+Epoch  12,   2100/2902 batches;
+                      perplexity:     6.61;  2403 tokens/s; 5:00:29 elapsed
+Epoch  12,   2200/2902 batches;
+                      perplexity:     6.55;  2424 tokens/s; 5:01:20 elapsed
+Epoch  12,   2300/2902 batches;
+                      perplexity:     6.55;  2337 tokens/s; 5:02:12 elapsed
+Epoch  12,   2400/2902 batches;
+                      perplexity:     6.78;  2344 tokens/s; 5:03:05 elapsed
+Epoch  12,   2500/2902 batches;
+                      perplexity:     6.61;  2329 tokens/s; 5:03:57 elapsed
+Epoch  12,   2600/2902 batches;
+                      perplexity:     6.47;  2357 tokens/s; 5:04:49 elapsed
+Epoch  12,   2700/2902 batches;
+                      perplexity:     6.58;  2340 tokens/s; 5:05:42 elapsed
+Epoch  12,   2800/2902 batches;
+                      perplexity:     6.58;  2347 tokens/s; 5:06:34 elapsed
+Epoch  12,   2900/2902 batches;
+                      perplexity:     6.71;  2326 tokens/s; 5:07:27 elapsed
+Train perplexity: 6.38
+Validation perplexity: 9.99
+Validation sentence reward: 36.23
+Validation corpus reward: 28.19
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_12.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch  13,    100/2902 batches;
+                      perplexity:     5.76;  2426 tokens/s; 5:09:37 elapsed
+Epoch  13,    200/2902 batches;
+                      perplexity:     5.61;  2356 tokens/s; 5:10:29 elapsed
+Epoch  13,    300/2902 batches;
+                      perplexity:     5.74;  2403 tokens/s; 5:11:20 elapsed
+Epoch  13,    400/2902 batches;
+                      perplexity:     5.86;  2365 tokens/s; 5:12:12 elapsed
+Epoch  13,    500/2902 batches;
+                      perplexity:     5.87;  2371 tokens/s; 5:13:04 elapsed
+Epoch  13,    600/2902 batches;
+                      perplexity:     5.84;  2438 tokens/s; 5:13:55 elapsed
+Epoch  13,    700/2902 batches;
+                      perplexity:     5.82;  2394 tokens/s; 5:14:47 elapsed
+Epoch  13,    800/2902 batches;
+                      perplexity:     5.85;  2402 tokens/s; 5:15:38 elapsed
+Epoch  13,    900/2902 batches;
+                      perplexity:     5.94;  2354 tokens/s; 5:16:30 elapsed
+Epoch  13,   1000/2902 batches;
+                      perplexity:     5.99;  2403 tokens/s; 5:17:21 elapsed
+Epoch  13,   1100/2902 batches;
+                      perplexity:     5.83;  2350 tokens/s; 5:18:13 elapsed
+Epoch  13,   1200/2902 batches;
+                      perplexity:     5.88;  2355 tokens/s; 5:19:05 elapsed
+Epoch  13,   1300/2902 batches;
+                      perplexity:     5.92;  2381 tokens/s; 5:19:57 elapsed
+Epoch  13,   1400/2902 batches;
+                      perplexity:     5.86;  2403 tokens/s; 5:20:47 elapsed
+Epoch  13,   1500/2902 batches;
+                      perplexity:     5.96;  2695 tokens/s; 5:21:33 elapsed
+Epoch  13,   1600/2902 batches;
+                      perplexity:     5.93;  3105 tokens/s; 5:22:12 elapsed
+Epoch  13,   1700/2902 batches;
+                      perplexity:     6.04;  2408 tokens/s; 5:23:03 elapsed
+Epoch  13,   1800/2902 batches;
+                      perplexity:     6.00;  2409 tokens/s; 5:23:54 elapsed
+Epoch  13,   1900/2902 batches;
+                      perplexity:     6.07;  2418 tokens/s; 5:24:44 elapsed
+Epoch  13,   2000/2902 batches;
+                      perplexity:     6.10;  2420 tokens/s; 5:25:35 elapsed
+Epoch  13,   2100/2902 batches;
+                      perplexity:     6.16;  2434 tokens/s; 5:26:26 elapsed
+Epoch  13,   2200/2902 batches;
+                      perplexity:     6.06;  2430 tokens/s; 5:27:16 elapsed
+Epoch  13,   2300/2902 batches;
+                      perplexity:     6.03;  2424 tokens/s; 5:28:07 elapsed
+Epoch  13,   2400/2902 batches;
+                      perplexity:     6.12;  2349 tokens/s; 5:29:00 elapsed
+Epoch  13,   2500/2902 batches;
+                      perplexity:     6.13;  2414 tokens/s; 5:29:50 elapsed
+Epoch  13,   2600/2902 batches;
+                      perplexity:     6.07;  2397 tokens/s; 5:30:41 elapsed
+Epoch  13,   2700/2902 batches;
+                      perplexity:     6.15;  2426 tokens/s; 5:31:32 elapsed
+Epoch  13,   2800/2902 batches;
+                      perplexity:     6.19;  2386 tokens/s; 5:32:24 elapsed
+Epoch  13,   2900/2902 batches;
+                      perplexity:     6.15;  2384 tokens/s; 5:33:15 elapsed
+Train perplexity: 5.96
+Validation perplexity: 9.88
+Validation sentence reward: 36.31
+Validation corpus reward: 28.53
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_13.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch  14,    100/2902 batches;
+                      perplexity:     5.31;  2380 tokens/s; 5:35:28 elapsed
+Epoch  14,    200/2902 batches;
+                      perplexity:     5.29;  2462 tokens/s; 5:36:19 elapsed
+Epoch  14,    300/2902 batches;
+                      perplexity:     5.44;  2397 tokens/s; 5:37:10 elapsed
+Epoch  14,    400/2902 batches;
+                      perplexity:     5.38;  2424 tokens/s; 5:38:00 elapsed
+Epoch  14,    500/2902 batches;
+                      perplexity:     5.41;  2414 tokens/s; 5:38:51 elapsed
+Epoch  14,    600/2902 batches;
+                      perplexity:     5.64;  2402 tokens/s; 5:39:42 elapsed
+Epoch  14,    700/2902 batches;
+                      perplexity:     5.56;  2345 tokens/s; 5:40:34 elapsed
+Epoch  14,    800/2902 batches;
+                      perplexity:     5.62;  2425 tokens/s; 5:41:24 elapsed
+Epoch  14,    900/2902 batches;
+                      perplexity:     5.58;  2403 tokens/s; 5:42:15 elapsed
+Epoch  14,   1000/2902 batches;
+                      perplexity:     5.59;  2441 tokens/s; 5:43:05 elapsed
+Epoch  14,   1100/2902 batches;
+                      perplexity:     5.64;  2397 tokens/s; 5:43:56 elapsed
+Epoch  14,   1200/2902 batches;
+                      perplexity:     5.69;  2410 tokens/s; 5:44:48 elapsed
+Epoch  14,   1300/2902 batches;
+                      perplexity:     5.74;  2478 tokens/s; 5:45:37 elapsed
+Epoch  14,   1400/2902 batches;
+                      perplexity:     5.68;  2782 tokens/s; 5:46:21 elapsed
+Epoch  14,   1500/2902 batches;
+                      perplexity:     5.64;  2933 tokens/s; 5:47:04 elapsed
+Epoch  14,   1600/2902 batches;
+                      perplexity:     5.70;  2447 tokens/s; 5:47:54 elapsed
+Epoch  14,   1700/2902 batches;
+                      perplexity:     5.72;  2375 tokens/s; 5:48:45 elapsed
+Epoch  14,   1800/2902 batches;
+                      perplexity:     5.87;  2471 tokens/s; 5:49:36 elapsed
+Epoch  14,   1900/2902 batches;
+                      perplexity:     5.78;  2373 tokens/s; 5:50:28 elapsed
+Epoch  14,   2000/2902 batches;
+                      perplexity:     5.69;  2407 tokens/s; 5:51:19 elapsed
+Epoch  14,   2100/2902 batches;
+                      perplexity:     5.78;  2411 tokens/s; 5:52:09 elapsed
+Epoch  14,   2200/2902 batches;
+                      perplexity:     5.85;  2426 tokens/s; 5:53:00 elapsed
+Epoch  14,   2300/2902 batches;
+                      perplexity:     5.76;  2405 tokens/s; 5:53:51 elapsed
+Epoch  14,   2400/2902 batches;
+                      perplexity:     5.77;  2435 tokens/s; 5:54:42 elapsed
+Epoch  14,   2500/2902 batches;
+                      perplexity:     5.69;  2425 tokens/s; 5:55:32 elapsed
+Epoch  14,   2600/2902 batches;
+                      perplexity:     5.70;  2416 tokens/s; 5:56:23 elapsed
+Epoch  14,   2700/2902 batches;
+                      perplexity:     5.87;  2413 tokens/s; 5:57:14 elapsed
+Epoch  14,   2800/2902 batches;
+                      perplexity:     5.75;  2410 tokens/s; 5:58:05 elapsed
+Epoch  14,   2900/2902 batches;
+                      perplexity:     5.96;  2387 tokens/s; 5:58:57 elapsed
+Train perplexity: 5.66
+Validation perplexity: 9.83
+Validation sentence reward: 36.49
+Validation corpus reward: 28.88
+Save model as /fs/clip-scratch/kxnguyen/emnlp17/translate_log/en-de/tmp/model_14.pt
+
+* XENT epoch *
+Model optim lr: 1
+Epoch  15,    100/2902 batches;
+                      perplexity:     5.01;  2396 tokens/s; 6:01:09 elapsed
+Epoch  15,    200/2902 batches;
+                      perplexity:     5.02;  2414 tokens/s; 6:02:00 elapsed
+Epoch  15,    300/2902 batches;
+                      perplexity:     5.16;  2394 tokens/s; 6:02:52 elapsed
+Epoch  15,    400/2902 batches;
+                      perplexity:     5.15;  2343 tokens/s; 6:03:44 elapsed
+Epoch  15,    500/2902 batches;
+                      perplexity:     5.13;  2272 tokens/s; 6:04:38 elapsed
+Epoch  15,    600/2902 batches;
+                      perplexity:     5.20;  2376 tokens/s; 6:05:29 elapsed
+Epoch  15,    700/2902 batches;
+                      perplexity:     5.18;  2433 tokens/s; 6:06:19 elapsed
+Epoch  15,    800/2902 batches;
+                      perplexity:     5.25;  2400 tokens/s; 6:07:11 elapsed
+Epoch  15,    900/2902 batches;
+                      perplexity:     5.15;  2337 tokens/s; 6:08:04 elapsed
+Epoch  15,   1000/2902 batches;
+                      perplexity:     5.24;  2329 tokens/s; 6:08:57 elapsed
+Epoch  15,   1100/2902 batches;
+                      perplexity:     5.26;  2313 tokens/s; 6:09:50 elapsed
+Epoch  15,   1200/2902 batches;
+                      perplexity:     5.29;  2581 tokens/s; 6:10:37 elapsed
+Epoch  15,   1300/2902 batches;
+                      perplexity:     5.25;  2916 tokens/s; 6:11:19 elapsed
+Epoch  15,   1400/2902 batches;
+                      perplexity:     5.38;  2420 tokens/s; 6:12:10 elapsed
+Epoch  15,   1500/2902 batches;
+                      perplexity:     5.35;  2412 tokens/s; 6:13:01 elapsed
+Epoch  15,   1600/2902 batches;
+                      perplexity:     5.35;  2374 tokens/s; 6:13:52 elapsed
+Epoch  15,   1700/2902 batches;
+                      perplexity:     5.34;  2390 tokens/s; 6:14:44 elapsed
+Epoch  15,   1800/2902 batches;
+                      perplexity:     5.42;  2436 tokens/s; 6:15:34 elapsed
+Epoch  15,   1900/2902 batches;
+                      perplexity:     5.39;  2420 tokens/s; 6:16:25 elapsed
+Epoch  15,   2000/2902 batches;
+                      perplexity:     5.31;  2412 tokens/s; 6:17:16 elapsed
+Epoch  15,   2100/2902 batches;
+                      perplexity:     5.46;  2404 tokens/s; 6:18:07 elapsed
+Epoch  15,   2200/2902 batches;
+                      perplexity:     5.43;  2405 tokens/s; 6:18:58 elapsed
+Epoch  15,   2300/2902 batches;
+                      perplexity:     5.52;  2368 tokens/s; 6:19:49 elapsed
+Epoch  15,   2400/2902 batches;
+                      perplexity:     5.45;  2455 tokens/s; 6:20:40 elapsed
+Epoch  15,   2500/2902 batches;
+                      perplexity:     5.51;  2406 tokens/s; 6:21:32 elapsed
+Epoch  15,   2600/2902 batches;
+                      perplexity:     5.39;  2406 tokens/s; 6:22:23 elapsed
+Epoch  15,   2700/2902 batches;
+                      perplexity:     5.40;  2377 tokens/s; 6:23:14 elapsed
+Epoch  15,   2800/2902 batches;
+                      perplexity:     5.58;  2461 tokens/s; 6:24:04 elapsed
+Epoch  15,   2900/2902 batches;
+                      perplexity:     5.52;  2411 tokens/s; 6:24:54 elapsed
+Train perplexity: 5.31
+Validation perplexity: 9.86
+Validation sentence reward: 36.49
+Validation corpus reward: 28.68
