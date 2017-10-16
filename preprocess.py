@@ -97,8 +97,7 @@ def makeData(which, srcFile, tgtFile, srcDicts, tgtDicts):
             if srcWords and not tgtWords or not srcWords and tgtWords:
                 print("WARNING: source and target do not have the same number of sentences")
             break
-
-        # Only remove long sentences for training set.
+            
         if len(srcWords) <= opt.seq_length and len(tgtWords) <= opt.seq_length:
             src += [srcDicts.convertToIdx(srcWords,
                                           lib.Constants.UNK_WORD)]
