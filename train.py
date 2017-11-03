@@ -67,6 +67,7 @@ parser.add_argument("-learning_rate_decay", type=float, default=0.5,
                     gone past the start_decay_at_limit""")
 parser.add_argument("-start_decay_at", type=int, default=5,
                     help="Start decay after this epoch")
+parser.add_argument("-weight_decay", type=float, default=1e-5)
 
 # GPU
 parser.add_argument("-gpus", default=[0], nargs="+", type=int,
@@ -132,7 +133,8 @@ def init(model):
 def create_optim(model):
     optim = lib.Optim(
         model.parameters(), opt.optim, opt.lr, opt.max_grad_norm,
-        lr_decay=opt.learning_rate_decay, start_decay_at=opt.start_decay_at
+        lr_decay=opt.learning_rate_decay, start_decay_at=opt.start_decay_at,
+        weight_decay=opt.weight_decay
     )
     return optim
 

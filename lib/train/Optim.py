@@ -5,17 +5,17 @@ import torch.optim as optim
 class Optim(object):
     def _makeOptimizer(self):
         if self.method == 'sgd':
-            self.optimizer = optim.SGD(self.params, lr=self.lr)
+            self.optimizer = optim.SGD(self.params, lr=self.lr, weight_decay=self.weight_decay)
         elif self.method == 'adagrad':
-            self.optimizer = optim.Adagrad(self.params, lr=self.lr)
+            self.optimizer = optim.Adagrad(self.params, lr=self.lr, weight_decay=self.weight_decay)
         elif self.method == 'adadelta':
-            self.optimizer = optim.Adadelta(self.params, lr=self.lr)
+            self.optimizer = optim.Adadelta(self.params, lr=self.lr, weight_decay=self.weight_decay)
         elif self.method == 'adam':
-            self.optimizer = optim.Adam(self.params, lr=self.lr)
+            self.optimizer = optim.Adam(self.params, lr=self.lr, weight_decay=self.weight_decay)
         else:
             raise RuntimeError("Invalid optim method: " + self.method)
 
-    def __init__(self, params, method, lr, max_grad_norm, lr_decay=1, start_decay_at=None):
+    def __init__(self, params, method, lr, max_grad_norm, lr_decay=1, start_decay_at=None, weight_decay=0):
         self.params = list(params)  # careful: params may be a generator
         self.last_loss = None
         self.lr = lr
@@ -23,6 +23,7 @@ class Optim(object):
         self.method = method
         self.lr_decay = lr_decay
         self.start_decay_at = start_decay_at
+        self.weight_decay = weight_decay
 
         self._makeOptimizer()
 
