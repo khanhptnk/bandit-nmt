@@ -29,6 +29,8 @@ For German-English
 > bash extract_data_de_en.sh
 ~~~~
 
+NOTE: train\_2014 and train\_2015 highly overlap. Please be cautious when using them for other projects. 
+
 Data should be ready in `$DATA/en-de/prep`
 
 TODO: Chinese-English needs segmentation
