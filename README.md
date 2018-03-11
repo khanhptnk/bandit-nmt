@@ -1,5 +1,7 @@
 # bandit-nmt
 
+THIS REPO DEMONSTRATES HOW TO INTEGRATE A POLICY GRADIENT METHOD INTO NMT. FOR A STATE-OF-THE-ART NMT CODEBASE, VISIT [simple-nmt](https://github.com/khanhptnk/simple-nmt). 
+
 This is code repo for our EMNLP 2017 paper ["Reinforcement Learning for Bandit Neural Machine Translation with Simulated Human Feedback"](https://arxiv.org/pdf/1707.07402.pdf), which implements the [A2C algorithm](https://arxiv.org/pdf/1602.01783.pdf) on top of a [neural encoder-decoder model](https://arxiv.org/pdf/1508.04025.pdf) and benchmarks the combination under simulated noisy rewards. 
 
 Requirements:
